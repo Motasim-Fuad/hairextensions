@@ -1,0 +1,15 @@
+enum SetupField {
+  businessName,
+  ownerName,
+  tagline,
+  phone,
+  email,
+  instagram,
+  website,
+  address,
+  taxRate,
+  depositValue,
+  paymentLink,
+  defaultNote,
+  validityDays,
+}

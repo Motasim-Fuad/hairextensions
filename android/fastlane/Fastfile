@@ -1,0 +1,32 @@
+default_platform(:android)
+
+AAB_PATH = "../build/app/outputs/bundle/prodRelease/app-prod-release.aab"
+
+platform :android do
+  desc "Upload the signed prod bundle to the internal testing track"
+  lane :internal do
+    upload_to_play_store(
+      track: "internal",
+      aab: AAB_PATH,
+      release_status: "completed",
+      skip_upload_metadata: true,
+      skip_upload_changelogs: true,
+      skip_upload_images: true,
+      skip_upload_screenshots: true
+    )
+  end
+
+  desc "Promote internal to another track with a staged rollout, e.g. fastlane promote to:production rollout:0.1"
+  lane :promote do |options|
+    upload_to_play_store(
+      track: "internal",
+      track_promote_to: options[:to] || "production",
+      rollout: (options[:rollout] || "0.1").to_s,
+      skip_upload_aab: true,
+      skip_upload_metadata: true,
+      skip_upload_changelogs: true,
+      skip_upload_images: true,
+      skip_upload_screenshots: true
+    )
+  end
+end

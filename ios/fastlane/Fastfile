@@ -1,0 +1,42 @@
+default_platform(:ios)
+
+platform :ios do
+  desc "Sign with match, build an obfuscated prod IPA and upload it to TestFlight"
+  lane :beta do
+    setup_ci if ENV["CI"]
+
+    api_key = app_store_connect_api_key(
+      key_id: ENV.fetch("ASC_KEY_ID"),
+      issuer_id: ENV.fetch("ASC_ISSUER_ID"),
+      key_content: ENV.fetch("ASC_KEY_P8_BASE64"),
+      is_key_content_base64: true
+    )
+
+    match(type: "appstore", readonly: true, api_key: api_key)
+
+    # Ruby and sh run inside ios/fastlane, so the project root is two levels up.
+    sh(
+      "cd ../.. && flutter build ipa --release " \
+      "--dart-define-from-file=config/prod.json " \
+      "--obfuscate --split-debug-info=build/symbols/ios " \
+      "--build-name=#{ENV.fetch('BUILD_NAME')} --build-number=#{ENV.fetch('BUILD_NUMBER')} " \
+      "--export-options-plist=ios/ExportOptions.plist"
+    )
+
+    ipa = Dir[File.expand_path("../../build/ios/ipa/*.ipa", __dir__)].first
+    UI.user_error!("No IPA was produced") if ipa.nil?
+
+    upload_to_testflight(api_key: api_key, ipa: ipa, skip_waiting_for_build_processing: true)
+
+    # Native dSYMs for Crashlytics. Dart symbols are uploaded separately by the workflow.
+    if ENV["CRASHLYTICS_DSYM_UPLOAD"] == "true"
+      dsyms = File.expand_path("../../build/ios/archive/Runner.xcarchive/dSYMs", __dir__)
+      zip(path: dsyms, output_path: File.expand_path("../../build/ios/dSYMs.zip", __dir__))
+      upload_symbols_to_crashlytics(
+        dsym_path: File.expand_path("../../build/ios/dSYMs.zip", __dir__),
+        gsp_path: File.expand_path("../Runner/GoogleService-Info.plist", __dir__),
+        binary_path: File.expand_path("../Pods/FirebaseCrashlytics/upload-symbols", __dir__)
+      )
+    end
+  end
+end

@@ -1,0 +1,7 @@
+{
+  "projects": {
+    "dev": "p2p-dev",
+    "staging": "p2p-staging",
+    "prod": "p2p-prod"
+  }
+}

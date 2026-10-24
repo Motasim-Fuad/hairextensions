@@ -1,0 +1,1 @@
+enum DocumentMode { client, internal }

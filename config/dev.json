@@ -1,0 +1,10 @@
+{
+  "FLAVOR": "dev",
+  "ENV": "dev",
+  "API_BASE_URL": "https://dev-api.example.com",
+  "PRIVACY_POLICY_URL": "https://example.com/privacy",
+  "TERMS_URL": "https://example.com/terms",
+  "SUPPORT_EMAIL": "support@example.com",
+  "ENABLE_CERT_PINNING": false,
+  "CERT_SHA256": ""
+}

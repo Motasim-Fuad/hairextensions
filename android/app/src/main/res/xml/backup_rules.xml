@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Android 11 and lower. The local database and logos are backed up, because until cloud sync ships a backup is
+     the only way quotes survive a new phone. Keystore-encrypted tokens are excluded: they cannot be decrypted on
+     another device, and the app opens a fresh device session instead. -->
+<full-backup-content>
+    <exclude domain="sharedpref" path="FlutterSecureStorage.xml" />
+</full-backup-content>

@@ -1,0 +1,1023 @@
+{
+  "@@locale": "en",
+  "appName": "Price to Profit",
+  "appTagline": "Price every install. Know your profit.",
+  "actionContinue": "Continue",
+  "actionCancel": "Cancel",
+  "actionDelete": "Delete",
+  "actionSave": "Save",
+  "actionRetry": "Retry",
+  "actionDone": "Done",
+  "actionClose": "Close",
+  "actionNext": "Next",
+  "actionSkip": "Skip",
+  "actionBack": "Back",
+  "actionEdit": "Edit",
+  "actionSeeAll": "See all",
+  "actionClearSearch": "Clear search",
+  "actionOpenSettings": "Open settings",
+  "loadingLabel": "Loading",
+  "fieldRequired": "This field is required",
+  "errorNetwork": "No internet connection. Check your network and try again.",
+  "errorTimeout": "The request took too long. Please try again.",
+  "errorCancelled": "The request was cancelled.",
+  "errorUnauthorized": "Your session has expired. Please continue again.",
+  "errorForbidden": "You do not have access to this action.",
+  "errorNotFound": "We could not find what you were looking for.",
+  "errorValidation": "Some details are not valid. Please review and try again.",
+  "errorServer": "Something went wrong on our side. Please try again shortly.",
+  "errorLocalStorage": "We could not save on this device. Please try again.",
+  "errorPermissionDenied": "Permission is needed to continue.",
+  "errorLocationDisabled": "Location services are turned off.",
+  "errorUnknown": "Something went wrong. Please try again.",
+  "offlineBannerMessage": "You are offline. Changes are saved on this device and will sync later.",
+  "permissionDeniedMessage": "Permission was denied. You can allow it to use this feature.",
+  "permissionPermanentlyDeniedMessage": "Permission is blocked. Enable it in system settings to use this feature.",
+  "actionGoHome": "Go to home",
+  "errorScreenTitle": "Something went wrong",
+  "errorScreenMessage": "This screen could not be shown. Your data is safe on this device.",
+  "errorFallbackMessage": "This part could not be displayed.",
+  "setupStepLabel": "Step {current} of {total}",
+  "@setupStepLabel": {
+    "placeholders": {
+      "current": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "setupIdentityTitle": "Your business identity",
+  "setupIdentitySubtitle": "This appears on every quote and invoice you send.",
+  "setupLogoTitle": "Upload your logo",
+  "setupLogoHint": "PNG or JPG, square works best. You can change it later.",
+  "setupLogoPlaceholder": "Logo",
+  "setupChooseImage": "Choose image",
+  "setupChangeImage": "Change image",
+  "setupRemoveImage": "Remove",
+  "setupContactTitle": "Contact details",
+  "setupContactSubtitle": "Clients will see these on your PDF.",
+  "setupQuoteDefaultsTitle": "Quote defaults",
+  "setupQuoteDefaultsSubtitle": "Pre-filled on every new quote. Edit anytime.",
+  "setupEditProfileTitle": "Business profile",
+  "setupEditProfileSubtitle": "Changes apply to new quotes and PDFs.",
+  "fieldBusinessName": "Business name",
+  "fieldBusinessNameHint": "Glam Strands Studio",
+  "fieldOwnerName": "Your name",
+  "fieldOwnerNameHint": "Amna Khan",
+  "fieldTagline": "Tagline (optional)",
+  "fieldTaglineHint": "Luxury hair extensions · Dubai",
+  "fieldPhone": "Phone",
+  "fieldPhoneHint": "+971 50 123 4567",
+  "fieldEmail": "Email",
+  "fieldEmailHint": "hello@glamstrands.ae",
+  "fieldInstagram": "Instagram",
+  "fieldInstagramHint": "@glamstrands.dxb",
+  "fieldWebsite": "Website (optional)",
+  "fieldWebsiteHint": "glamstrands.ae",
+  "fieldAddress": "Address (optional)",
+  "fieldAddressHint": "Jumeirah 1, Dubai, UAE",
+  "fieldCurrency": "Currency",
+  "fieldTaxRate": "Tax / VAT",
+  "fieldDefaultDeposit": "Default deposit",
+  "depositPercentOption": "%",
+  "depositFixedOption": "Fixed",
+  "fieldPaymentLink": "Default payment link",
+  "fieldPaymentLinkHint": "https://pay.glamstrands.ae/deposit",
+  "fieldPaymentLinkHelper": "Stripe, PayPal, bank link — any URL works.",
+  "fieldDefaultNote": "Default note",
+  "fieldDefaultNoteHint": "Deposit secures your appointment and is non-refundable. Balance due on the day.",
+  "fieldQuoteValidity": "Quotes valid for",
+  "unitDays": "days",
+  "unitPercent": "%",
+  "percentValue": "{value}%",
+  "@percentValue": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "actionFinishSetup": "Finish setup",
+  "actionChooseCurrency": "Choose currency",
+  "currencyPickerTitle": "Currency",
+  "currencyLabel": "{code} · {name}",
+  "@currencyLabel": {
+    "placeholders": {
+      "code": {
+        "type": "String"
+      },
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "currencyNameAed": "UAE Dirham",
+  "currencyNameSar": "Saudi Riyal",
+  "currencyNameQar": "Qatari Riyal",
+  "currencyNameUsd": "US Dollar",
+  "currencyNameGbp": "British Pound",
+  "currencyNameEur": "Euro",
+  "currencyNameCad": "Canadian Dollar",
+  "currencyNameAud": "Australian Dollar",
+  "currencyNameInr": "Indian Rupee",
+  "currencyNameBdt": "Bangladeshi Taka",
+  "validationTooLong": "This is too long.",
+  "validationInvalidEmail": "Enter a valid email address.",
+  "validationInvalidUrl": "Enter a valid link, for example yourstudio.com.",
+  "validationInvalidPhone": "Enter a valid phone number.",
+  "validationInvalidPercent": "Enter a percentage from 0 to 100.",
+  "validationInvalidAmount": "Enter an amount of 0 or more.",
+  "validationInvalidDays": "Enter between 1 and 365 days.",
+  "setupCompleteTitle": "You're all set, {name}",
+  "@setupCompleteTitle": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "setupCompleteSubtitle": "Here's how your quotes will look to clients.",
+  "previewDocumentLabel": "QUOTE",
+  "previewVat": "VAT",
+  "actionCreateFirstQuote": "Create first quote",
+  "navHome": "Home",
+  "navQuotes": "Quotes",
+  "navLibrary": "Library",
+  "navSettings": "Settings",
+  "navNewQuote": "New quote",
+  "maintenanceTitle": "We'll be right back",
+  "maintenanceMessage": "Price to Profit is being updated. Everything you saved is safe on this device.",
+  "forceUpdateTitle": "Update required",
+  "forceUpdateMessage": "This version is no longer supported. Update the app to keep quoting.",
+  "actionUpdateNow": "Update now",
+  "errorOpenStore": "Couldn't open the store. Update from the App Store or Google Play.",
+  "actionGetStarted": "Get started",
+  "paywallTitle": "Unlock Price to\nProfit Pro",
+  "settingsBusinessProfile": "Business profile",
+  "settingsQuoteDefaults": "Quote defaults",
+  "placeholderMessage": "This screen arrives with its feature.",
+  "onboardingStep": "{current} / {total}",
+  "@onboardingStep": {
+    "placeholders": {
+      "current": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "onboardingCostTitle": "Know your cost\nper gram.",
+  "onboardingCostBody": "Enter your pack price and grams — we do the math, round up packs and show your leftover hair.",
+  "onboardingQuoteTitle": "Build a full quote\nin minutes.",
+  "onboardingQuoteBody": "Hair, install, materials, add-ons, shipping, VAT, deposit and balance — all in one flow.",
+  "onboardingBrandTitle": "Send branded quotes\n& invoices.",
+  "onboardingBrandBody": "Your logo, your details, your payment link. Share a clean PDF on WhatsApp or email.",
+  "sampleProductName": "Luxe Tape-In 22”",
+  "sampleProductMeta": "#60 Platinum · {grams} g pack",
+  "@sampleProductMeta": {
+    "placeholders": {
+      "grams": {
+        "type": "int"
+      }
+    }
+  },
+  "labelPackPrice": "Pack price",
+  "labelGramsPerPack": "Grams per pack",
+  "labelCostPerGram": "Cost per gram",
+  "gramsValue": "{grams} g",
+  "@gramsValue": {
+    "placeholders": {
+      "grams": {
+        "type": "String"
+      }
+    }
+  },
+  "onboardingCostFormula": "{price} ÷ {grams} = {cost} per gram",
+  "@onboardingCostFormula": {
+    "placeholders": {
+      "price": {
+        "type": "String"
+      },
+      "grams": {
+        "type": "String"
+      },
+      "cost": {
+        "type": "String"
+      }
+    }
+  },
+  "sampleLineHair": "Hair · {grams} g",
+  "@sampleLineHair": {
+    "placeholders": {
+      "grams": {
+        "type": "String"
+      }
+    }
+  },
+  "sampleLineInstall": "Install · {hours} h",
+  "@sampleLineInstall": {
+    "placeholders": {
+      "hours": {
+        "type": "String"
+      }
+    }
+  },
+  "labelMaterials": "Materials",
+  "vatRateLabel": "VAT {rate}%",
+  "@vatRateLabel": {
+    "placeholders": {
+      "rate": {
+        "type": "String"
+      }
+    }
+  },
+  "labelTotal": "Total",
+  "sampleBusinessName": "Glam Strands Studio",
+  "sampleBusinessContact": "Dubai · +971 50 123 4567",
+  "documentQuotation": "QUOTATION",
+  "sampleServiceName": "Full head tape-in",
+  "labelDeposit": "Deposit",
+  "labelBalanceDue": "Balance due",
+  "actionPayDeposit": "Pay deposit",
+  "actionShare": "Share",
+  "actionEmail": "Email",
+  "actionCopyLink": "Copy link",
+  "paywallSubtitle": "Everything you need to price installs and get paid.",
+  "paywallFeatureUnlimited": "Unlimited quotes & invoices",
+  "paywallFeatureBranding": "Your logo & branding on every PDF",
+  "paywallFeatureLibrary": "Product, materials & service library",
+  "paywallFeaturePaymentLink": "Payment link & custom notes",
+  "paywallFeatureProfit": "Profit per hour & internal cost sheet",
+  "planAnnual": "Annual",
+  "planBestValue": "BEST VALUE",
+  "planAnnualDetail": "{monthly}/mo · {days}-day trial",
+  "@planAnnualDetail": {
+    "placeholders": {
+      "monthly": {
+        "type": "String"
+      },
+      "days": {
+        "type": "int"
+      }
+    }
+  },
+  "planMonthly": "Monthly",
+  "planMonthlyDetail": "Billed monthly · cancel anytime",
+  "paywallStartTrial": "Start {days}-day free trial",
+  "@paywallStartTrial": {
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
+  },
+  "paywallRenewal": "Then {price} / year. Cancel anytime.",
+  "@paywallRenewal": {
+    "placeholders": {
+      "price": {
+        "type": "String"
+      }
+    }
+  },
+  "actionRestorePurchases": "Restore purchases",
+  "linkTerms": "Terms",
+  "linkPrivacy": "Privacy",
+  "paywallUnavailable": "Purchases are not available in this build yet.",
+  "errorOpenLink": "Could not open the link.",
+  "middleDot": "·",
+  "actionAddAddOn": "Add add-on",
+  "actionAddHair": "Add hair",
+  "actionAddMaterial": "Add material",
+  "actionAddService": "Add service",
+  "actionAddToQuote": "Add to quote",
+  "actionChange": "Change",
+  "actionConvertToInvoice": "Convert to invoice",
+  "actionCopy": "Copy",
+  "actionCreateYourFirstQuote": "Create your first quote",
+  "actionDeleteProduct": "Delete product",
+  "actionDeleteQuote": "Delete quote",
+  "actionDuplicate": "Duplicate",
+  "actionGeneratePdf": "Generate PDF",
+  "actionManage": "Manage",
+  "actionMarkPaid": "Mark as paid",
+  "actionNotNow": "Not now",
+  "actionReviewQuote": "Review quote",
+  "actionSearch": "Search",
+  "actionSharePdf": "Share PDF",
+  "actionUpgrade": "Upgrade",
+  "actionView": "View",
+  "activityConverted": "Converted to invoice",
+  "activityCreated": "Quote created",
+  "activityPaid": "Marked as paid",
+  "activityShared": "PDF shared",
+  "activityValidUntil": "Valid until",
+  "addAddOnTitle": "Add add-on",
+  "addHairTitle": "Add hair",
+  "addMaterialTitle": "Add material",
+  "addOnNameHint": "e.g. Bond protection",
+  "addServiceTitle": "Add service",
+  "amountHint": "0",
+  "builderNeedsLine": "Add at least one item to continue.",
+  "builderTitle": "New Quote",
+  "chipAuto": "Auto",
+  "dayToday": "Today",
+  "dayYesterday": "Yesterday",
+  "deleteProductTitle": "Delete this product?",
+  "deleteQuoteTitle": "Delete this quote?",
+  "depositFixedAmount": "Fixed amount",
+  "depositPercentOfTotal": "% of total",
+  "documentAmount": "Amount",
+  "documentBillTo": "Bill to",
+  "documentCostAndPrice": "Cost / Price",
+  "documentCostSheet": "Cost sheet",
+  "documentCostSheetFile": "cost-sheet",
+  "documentDescription": "Description",
+  "documentInternalOnly": "Internal only · not for clients",
+  "documentInvoice": "Invoice",
+  "documentNote": "Note",
+  "errorPdf": "Couldn’t generate PDF.",
+  "fieldAppointment": "Appointment",
+  "fieldAppointmentHint": "Select date",
+  "fieldClientName": "Client name",
+  "fieldClientNameHint": "e.g. Sara Al Mansoori",
+  "fieldClientPhoneHint": "Phone (optional)",
+  "fieldNoteToClient": "Note to client",
+  "fieldPaymentLinkShort": "Payment link",
+  "fieldRate": "Rate",
+  "filterAll": "All",
+  "filterInvoices": "Invoices",
+  "filterThisMonth": "This month",
+  "greetingAfternoon": "Good afternoon",
+  "greetingEvening": "Good evening",
+  "greetingMorning": "Good morning",
+  "hairExactGrams": "Exact grams",
+  "hairLeftover": "Leftover",
+  "hairLiveCalculation": "Live calculation",
+  "hairPacksNeeded": "Packs needed",
+  "hairRequiredAmount": "Required amount",
+  "hairRequiredAmountHint": "0",
+  "hairWholePack": "Whole pack",
+  "hairYourCost": "Your cost",
+  "hairTypeClipIn": "Clip-In",
+  "hairTypeITip": "I-Tip",
+  "hairTypeKeratin": "Keratin",
+  "hairTypeTapeIn": "Tape-In",
+  "hairTypeWeft": "Weft",
+  "homeAddProduct": "Add product",
+  "homeDuplicateLast": "Duplicate last",
+  "homeQuotedThisMonth": "Quoted this month",
+  "homeRecentQuotes": "Recent quotes",
+  "homeStatDeposits": "Deposits",
+  "homeStatInvoices": "Invoices",
+  "homeStatQuotes": "Quotes",
+  "itemName": "Name",
+  "itemQuantity": "Quantity",
+  "itemUnitPrice": "Unit price",
+  "labelBalance": "Balance",
+  "labelClientPrice": "Client price",
+  "labelCosts": "Costs",
+  "labelHours": "Hours",
+  "labelMargin": "Margin",
+  "labelProfit": "Profit",
+  "labelProfitPerHour": "Profit / hour",
+  "labelSubtotal": "Subtotal",
+  "libraryNoResults": "No matching items",
+  "libraryProducts": "Products",
+  "librarySearchHint": "Search library",
+  "libraryServices": "Services",
+  "lineAddOn": "Add-on",
+  "lineFlatFee": "Flat fee",
+  "lineNotTaxable": "Not taxable",
+  "lineTaxable": "Taxable",
+  "materialFromLibrary": "From library",
+  "materialNameHint": "e.g. Keratin bonds",
+  "perGram": "per gram",
+  "perStrand": "per strand",
+  "pickProductTitle": "Choose product",
+  "previewClientPdf": "Client PDF",
+  "previewCostSheet": "Cost sheet",
+  "previewTitle": "Preview",
+  "pricingMarkup": "Markup",
+  "pricingRetail": "Retail",
+  "pricingRetailPerGram": "Retail price / gram",
+  "proLockExpiredTitle": "Your Pro access has expired",
+  "proLockMessage": "Unlock unlimited quotes, PDF invoices and profit tracking.",
+  "proLockRenew": "Renew Pro",
+  "proLockTitle": "Unlock Pro to create quotes",
+  "proLockUnlock": "Unlock Pro",
+  "productColour": "Colour",
+  "productColourHint": "e.g. #60 Platinum",
+  "productCostPerGram": "Cost per gram",
+  "productCostPerPiece": "Cost per piece",
+  "productDefaultPricing": "Default pricing",
+  "productEditTitle": "Edit Product",
+  "productLength": "Length",
+  "productName": "Product name",
+  "productNewTitle": "New Product",
+  "productPiecesPerPack": "Pieces per pack",
+  "productSoldBy": "Sold by",
+  "productTaxableDefault": "Taxable by default",
+  "productType": "Type",
+  "quoteActivity": "Activity",
+  "quoteLockedNotice": "This invoice is locked. Duplicate it to make changes.",
+  "quotesEmptyMessage": "Build your first quote in under a minute and see your profit instantly.",
+  "quotesEmptyTitle": "No quotes yet",
+  "quotesNoResultsFilter": "No quotes match this filter",
+  "quotesNoResultsMessage": "Try a different name or number.",
+  "quotesSearchHint": "Search client or number",
+  "reviewClientBreakdown": "Client breakdown",
+  "reviewHideFormulas": "Hide formulas",
+  "reviewNoteAndPayment": "Note & payment",
+  "reviewOnlyYou": "Only you see this",
+  "reviewPerBookedHour": "per booked hour",
+  "reviewShowFormulas": "Show formulas",
+  "reviewYourProfit": "Your profit",
+  "sampleDocumentContact": "+971 50 123 4567 · hello@glamstrands.ae",
+  "sampleOwnerName": "Amna",
+  "sectionAddOns": "Add-ons",
+  "sectionClient": "Client",
+  "sectionHair": "Hair & products",
+  "sectionNote": "Note & payment link",
+  "sectionService": "Labor / service",
+  "sectionShipping": "Shipping",
+  "separatorDot": " · ",
+  "serviceBookedHours": "Booked hours",
+  "serviceCalculation": "Calculation",
+  "serviceCharge": "Charge",
+  "serviceFee": "Fee",
+  "serviceFlat": "Flat",
+  "serviceFromTemplates": "From templates",
+  "serviceHourly": "Hourly",
+  "serviceHoursNote": "Booked hours feed your profit per hour.",
+  "serviceName": "Service name",
+  "serviceNameHint": "e.g. Tape-in install",
+  "serviceProfitNote": "Labor is pure profit unless you add costs.",
+  "serviceRate": "Rate / hour",
+  "settingsGroupAbout": "ABOUT",
+  "settingsGroupBusiness": "BUSINESS",
+  "settingsGroupLibrary": "LIBRARY",
+  "settingsGroupSubscription": "SUBSCRIPTION",
+  "settingsManageSubscription": "Manage subscription",
+  "settingsNumbering": "Numbering",
+  "settingsPdfBranding": "PDF branding",
+  "settingsPrivacy": "Privacy policy",
+  "settingsProActive": "Pro · Active",
+  "settingsProActiveDetail": "All features unlocked",
+  "settingsProInactive": "Free plan",
+  "settingsProInactiveDetail": "Upgrade to unlock quotes and PDFs",
+  "settingsServiceTemplates": "Service templates",
+  "settingsSupport": "Contact support",
+  "settingsTerms": "Terms of use",
+  "shareMore": "More",
+  "shareWhatsApp": "WhatsApp",
+  "soldByGrams": "Grams",
+  "soldByPieces": "Pieces",
+  "sortName": "Name",
+  "sortRecent": "Recent",
+  "statBalance": "Balance",
+  "statCosts": "Costs",
+  "statDeposit": "Deposit",
+  "statHours": "Hours",
+  "statMargin": "Margin",
+  "statProfit": "Profit",
+  "statTotal": "Total",
+  "statusDraft": "Draft",
+  "statusInvoice": "Invoice",
+  "statusPaid": "Paid",
+  "statusQuote": "Quote",
+  "unitGrams": "grams",
+  "unitGramsShort": "g",
+  "unitHoursShort": "h",
+  "unitInch": "in",
+  "unitStrands": "strands",
+  "builderSubtitle": "{number} · Draft",
+  "@builderSubtitle": {
+    "placeholders": {
+      "number": {
+        "type": "String"
+      }
+    }
+  },
+  "deleteProductMessage": "{name} will be removed from your library.",
+  "@deleteProductMessage": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "deleteQuoteMessage": "{number} for {client} will be permanently removed. This can’t be undone.",
+  "@deleteQuoteMessage": {
+    "placeholders": {
+      "number": {
+        "type": "String"
+      },
+      "client": {
+        "type": "String"
+      }
+    }
+  },
+  "divisionFormula": "{price} ÷ {units}",
+  "@divisionFormula": {
+    "placeholders": {
+      "price": {
+        "type": "String"
+      },
+      "units": {
+        "type": "int"
+      }
+    }
+  },
+  "documentCostPriceValue": "{cost} / {price}",
+  "@documentCostPriceValue": {
+    "placeholders": {
+      "cost": {
+        "type": "String"
+      },
+      "price": {
+        "type": "String"
+      }
+    }
+  },
+  "documentLineDetail": "{title} · {detail}",
+  "@documentLineDetail": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      },
+      "detail": {
+        "type": "String"
+      }
+    }
+  },
+  "documentLineQuantity": "{title} × {quantity}",
+  "@documentLineQuantity": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      },
+      "quantity": {
+        "type": "int"
+      }
+    }
+  },
+  "documentPayDeposit": "Pay deposit · {amount}",
+  "@documentPayDeposit": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "documentReference": "{number} · {date}",
+  "@documentReference": {
+    "placeholders": {
+      "number": {
+        "type": "String"
+      },
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "documentThanks": "Thank you for choosing {business}.",
+  "@documentThanks": {
+    "placeholders": {
+      "business": {
+        "type": "String"
+      }
+    }
+  },
+  "formulaCostPart": "{category, select, hair{Hair} service{Service} material{Materials} addOn{Add-ons} shipping{Shipping} other{Other}} {amount}",
+  "@formulaCostPart": {
+    "placeholders": {
+      "category": {
+        "type": "String"
+      },
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "formulaCosts": "Costs = {parts} = {total}",
+  "@formulaCosts": {
+    "placeholders": {
+      "parts": {
+        "type": "String"
+      },
+      "total": {
+        "type": "String"
+      }
+    }
+  },
+  "formulaProfit": "Profit = {total} − {vat} VAT − {costs} costs = {profit}",
+  "@formulaProfit": {
+    "placeholders": {
+      "total": {
+        "type": "String"
+      },
+      "vat": {
+        "type": "String"
+      },
+      "costs": {
+        "type": "String"
+      },
+      "profit": {
+        "type": "String"
+      }
+    }
+  },
+  "formulaPerHour": "Per hour = {profit} ÷ {hours} h = {perHour}",
+  "@formulaPerHour": {
+    "placeholders": {
+      "profit": {
+        "type": "String"
+      },
+      "hours": {
+        "type": "String"
+      },
+      "perHour": {
+        "type": "String"
+      }
+    }
+  },
+  "hairExactFormula": "{grams} g × {price} / g",
+  "@hairExactFormula": {
+    "placeholders": {
+      "grams": {
+        "type": "int"
+      },
+      "price": {
+        "type": "String"
+      }
+    }
+  },
+  "hairPackFormula": "{grams} g ÷ {per} g/pack = {ratio} → {packs} packs · {packs} × {price}",
+  "@hairPackFormula": {
+    "placeholders": {
+      "grams": {
+        "type": "int"
+      },
+      "per": {
+        "type": "int"
+      },
+      "ratio": {
+        "type": "String"
+      },
+      "packs": {
+        "type": "int"
+      },
+      "price": {
+        "type": "String"
+      }
+    }
+  },
+  "homeAvgProfitPerHour": "Avg profit / hr · {amount}",
+  "@homeAvgProfitPerHour": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "homeChangeVsMonth": "{change} vs {month}",
+  "@homeChangeVsMonth": {
+    "placeholders": {
+      "change": {
+        "type": "String"
+      },
+      "month": {
+        "type": "String"
+      }
+    }
+  },
+  "hoursValue": "{hours} h",
+  "@hoursValue": {
+    "placeholders": {
+      "hours": {
+        "type": "String"
+      }
+    }
+  },
+  "libraryCount": "{count, plural, =1{1 item} other{{count} items}}",
+  "@libraryCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "lineCost": "Cost {cost}",
+  "@lineCost": {
+    "placeholders": {
+      "cost": {
+        "type": "String"
+      }
+    }
+  },
+  "lineHairExact": "{weight} · Exact grams",
+  "@lineHairExact": {
+    "placeholders": {
+      "weight": {
+        "type": "String"
+      }
+    }
+  },
+  "lineHairShort": "{grams} g · {packs, plural, =1{1 pack} other{{packs} packs}}",
+  "@lineHairShort": {
+    "placeholders": {
+      "grams": {
+        "type": "int"
+      },
+      "packs": {
+        "type": "int"
+      }
+    }
+  },
+  "lineHairWholePack": "{weight} · Whole pack · {packs, plural, =1{1 pack} other{{packs} packs}} ({left} g left)",
+  "@lineHairWholePack": {
+    "placeholders": {
+      "weight": {
+        "type": "String"
+      },
+      "packs": {
+        "type": "int"
+      },
+      "left": {
+        "type": "int"
+      }
+    }
+  },
+  "lineHoursRate": "{hours} h × {rate}",
+  "@lineHoursRate": {
+    "placeholders": {
+      "hours": {
+        "type": "String"
+      },
+      "rate": {
+        "type": "String"
+      }
+    }
+  },
+  "lineHoursRatePerHour": "{hours} h × {rate} / h",
+  "@lineHoursRatePerHour": {
+    "placeholders": {
+      "hours": {
+        "type": "String"
+      },
+      "rate": {
+        "type": "String"
+      }
+    }
+  },
+  "lineMarkup": "Markup {percent}%",
+  "@lineMarkup": {
+    "placeholders": {
+      "percent": {
+        "type": "String"
+      }
+    }
+  },
+  "lineQuantityTimes": "{quantity} × {price}",
+  "@lineQuantityTimes": {
+    "placeholders": {
+      "quantity": {
+        "type": "int"
+      },
+      "price": {
+        "type": "String"
+      }
+    }
+  },
+  "lineTitleWithVariant": "{title} · {variant}",
+  "@lineTitleWithVariant": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      },
+      "variant": {
+        "type": "String"
+      }
+    }
+  },
+  "materialCostPrice": "Cost {cost} · Price {price}",
+  "@materialCostPrice": {
+    "placeholders": {
+      "cost": {
+        "type": "String"
+      },
+      "price": {
+        "type": "String"
+      }
+    }
+  },
+  "minusValue": "− {amount}",
+  "@minusValue": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "numberingValue": "{quote} / {invoice}",
+  "@numberingValue": {
+    "placeholders": {
+      "quote": {
+        "type": "String"
+      },
+      "invoice": {
+        "type": "String"
+      }
+    }
+  },
+  "packsValue": "{count, plural, =1{1 pack} other{{count} packs}}",
+  "@packsValue": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "perUnitPrice": "{price} / unit",
+  "@perUnitPrice": {
+    "placeholders": {
+      "price": {
+        "type": "String"
+      }
+    }
+  },
+  "proLockPlan": "Annual · {price}",
+  "@proLockPlan": {
+    "placeholders": {
+      "price": {
+        "type": "String"
+      }
+    }
+  },
+  "proLockPlanDetail": "Best value · {monthly} / month",
+  "@proLockPlanDetail": {
+    "placeholders": {
+      "monthly": {
+        "type": "String"
+      }
+    }
+  },
+  "productPackPrice": "{price} / {units} {unit} pack",
+  "@productPackPrice": {
+    "placeholders": {
+      "price": {
+        "type": "String"
+      },
+      "units": {
+        "type": "int"
+      },
+      "unit": {
+        "type": "String"
+      }
+    }
+  },
+  "productPackSummary": "{price} · {units} {unit} pack",
+  "@productPackSummary": {
+    "placeholders": {
+      "price": {
+        "type": "String"
+      },
+      "units": {
+        "type": "int"
+      },
+      "unit": {
+        "type": "String"
+      }
+    }
+  },
+  "profitValue": "+ {amount}",
+  "@profitValue": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "quoteCreatedValid": "Created {created} · Valid until {valid}",
+  "@quoteCreatedValid": {
+    "placeholders": {
+      "created": {
+        "type": "String"
+      },
+      "valid": {
+        "type": "String"
+      }
+    }
+  },
+  "quoteLineSummary": "{count, plural, =1{1 line item} other{{count} line items}} · VAT {vat}",
+  "@quoteLineSummary": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "vat": {
+        "type": "String"
+      }
+    }
+  },
+  "quotesNoResults": "No results for “{query}”",
+  "@quotesNoResults": {
+    "placeholders": {
+      "query": {
+        "type": "String"
+      }
+    }
+  },
+  "reviewAppointment": "{number} · Appointment {date}",
+  "@reviewAppointment": {
+    "placeholders": {
+      "number": {
+        "type": "String"
+      },
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "reviewVatOn": "VAT {rate}% (on {amount})",
+  "@reviewVatOn": {
+    "placeholders": {
+      "rate": {
+        "type": "String"
+      },
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "settingsVersion": "Price to Profit · v{version}",
+  "@settingsVersion": {
+    "placeholders": {
+      "version": {
+        "type": "String"
+      }
+    }
+  },
+  "signedNegative": "−{value}%",
+  "@signedNegative": {
+    "placeholders": {
+      "value": {
+        "type": "int"
+      }
+    }
+  },
+  "signedPositive": "+{value}%",
+  "@signedPositive": {
+    "placeholders": {
+      "value": {
+        "type": "int"
+      }
+    }
+  },
+  "vatAppliedTo": "VAT applied to {count, plural, =1{1 line} other{{count} lines}} · {amount}",
+  "@vatAppliedTo": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "brandWordmark": "Amna Sheen",
+  "authLoginTitle": "Welcome back",
+  "authLoginSubtitle": "Log in to keep pricing every install with confidence.",
+  "authRegisterTitle": "Create your account",
+  "authRegisterSubtitle": "Price smarter and know your profit on every job.",
+  "authForgotTitle": "Reset your password",
+  "authForgotSubtitle": "Enter your email and we will send you a link to reset your password.",
+  "authForgotSentTitle": "Check your inbox",
+  "authForgotSentBody": "If an account exists for that email, a reset link is on its way.",
+  "authActionLogin": "Log in",
+  "authActionRegister": "Create account",
+  "authActionSendLink": "Send reset link",
+  "authActionBackToLogin": "Back to log in",
+  "authForgotPasswordLink": "Forgot password?",
+  "authNoAccountPrompt": "New here?",
+  "authHaveAccountPrompt": "Already have an account?",
+  "authFieldFullName": "Full name",
+  "authFieldFullNameHint": "Your name",
+  "authFieldEmail": "Email",
+  "authFieldEmailHint": "you@example.com",
+  "authFieldPassword": "Password",
+  "authFieldPasswordHint": "At least 8 characters",
+  "authFieldConfirmPassword": "Confirm password",
+  "authFieldConfirmPasswordHint": "Re-enter your password",
+  "authShowPassword": "Show password",
+  "authHidePassword": "Hide password",
+  "authTermsLabel": "I agree to the Terms of Service and Privacy Policy",
+  "authErrorPasswordShort": "Use at least 8 characters.",
+  "authErrorPasswordWeak": "Include at least one letter and one number.",
+  "authErrorPasswordMismatch": "Passwords do not match.",
+  "authErrorTermsRequired": "Please accept the terms to continue.",
+  "authErrorSubmitFailed": "We could not complete that. Please try again."
+}

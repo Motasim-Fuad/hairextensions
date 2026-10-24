@@ -1,0 +1,1 @@
+enum SettingsError { link, purchase }

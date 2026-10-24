@@ -1,0 +1,22 @@
+version: 2
+updates:
+  - package-ecosystem: pub
+    directory: /
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 5
+    groups:
+      firebase:
+        patterns: ["firebase_*"]
+      bloc:
+        patterns: ["bloc", "flutter_bloc", "bloc_test"]
+
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: monthly
+
+  - package-ecosystem: bundler
+    directory: /
+    schedule:
+      interval: monthly

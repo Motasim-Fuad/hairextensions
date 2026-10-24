@@ -1,0 +1,94 @@
+{
+  "parameterGroups": {
+    "Features": {
+      "description": "Remote switches. Off hides the feature and blocks its routes on the next fetch.",
+      "parameters": {
+        "feature_quote_builder": {
+          "defaultValue": { "value": "true" },
+          "valueType": "BOOLEAN",
+          "description": "Quote builder and the new-quote route"
+        },
+        "feature_invoices": {
+          "defaultValue": { "value": "true" },
+          "valueType": "BOOLEAN",
+          "description": "Convert to invoice and mark as paid"
+        },
+        "feature_pdf_export": {
+          "defaultValue": { "value": "true" },
+          "valueType": "BOOLEAN",
+          "description": "PDF preview and sharing"
+        },
+        "feature_internal_cost_sheet": {
+          "defaultValue": { "value": "true" },
+          "valueType": "BOOLEAN",
+          "description": "Internal cost sheet tab in the PDF preview"
+        },
+        "feature_profit_insights": {
+          "defaultValue": { "value": "true" },
+          "valueType": "BOOLEAN",
+          "description": "Profit figures on home and quote review"
+        },
+        "feature_library": {
+          "defaultValue": { "value": "true" },
+          "valueType": "BOOLEAN",
+          "description": "Library tab: products, materials and services"
+        },
+        "feature_subscriptions": {
+          "defaultValue": { "value": "true" },
+          "valueType": "BOOLEAN",
+          "description": "Paywall and Pro gating. Off makes every feature free"
+        },
+        "feature_quote_duplicate": {
+          "defaultValue": { "value": "true" },
+          "valueType": "BOOLEAN",
+          "description": "Duplicate a saved quote"
+        },
+        "feature_cloud_sync": {
+          "defaultValue": { "value": "false" },
+          "valueType": "BOOLEAN",
+          "description": "Sync engine and background task. Needs the backend live"
+        },
+        "feature_push_notifications": {
+          "defaultValue": { "value": "false" },
+          "valueType": "BOOLEAN",
+          "description": "Push notification opt-in"
+        }
+      }
+    },
+    "App gate": {
+      "description": "Force update and maintenance. Evaluated by AppGateService.",
+      "parameters": {
+        "min_supported_version": {
+          "defaultValue": { "value": "1.0.0" },
+          "valueType": "STRING",
+          "description": "Versions below this see the blocking update screen"
+        },
+        "latest_version": {
+          "defaultValue": { "value": "1.0.0" },
+          "valueType": "STRING",
+          "description": "Versions below this are told an update is available"
+        },
+        "maintenance_mode": {
+          "defaultValue": { "value": "false" },
+          "valueType": "BOOLEAN",
+          "description": "Replaces the app with the maintenance screen"
+        },
+        "maintenance_message": {
+          "defaultValue": { "value": "" },
+          "valueType": "STRING",
+          "description": "Optional text for the maintenance screen; empty uses the localized default"
+        },
+        "store_url_android": {
+          "defaultValue": { "value": "" },
+          "valueType": "STRING",
+          "description": "Play Store listing opened by the update screen"
+        },
+        "store_url_ios": {
+          "defaultValue": { "value": "" },
+          "valueType": "STRING",
+          "description": "App Store listing opened by the update screen"
+        }
+      }
+    }
+  }
+}

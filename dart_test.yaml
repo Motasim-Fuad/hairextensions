@@ -1,0 +1,3 @@
+tags:
+  golden:
+    description: Pixel comparisons. Regenerate with flutter test --update-goldens --tags golden.
