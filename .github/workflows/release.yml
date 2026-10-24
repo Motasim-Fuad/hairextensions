@@ -111,7 +111,7 @@ jobs:
             npx --yes firebase-tools crashlytics:symbols:upload --app="$FIREBASE_APP_ID" build/symbols/android
           rm -f "$RUNNER_TEMP/firebase-sa.json"
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: android-release
           path: |
@@ -185,7 +185,7 @@ jobs:
             npx --yes firebase-tools crashlytics:symbols:upload --app="$FIREBASE_APP_ID" build/symbols/ios
           rm -f "$RUNNER_TEMP/firebase-sa.json"
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: ios-release
           path: |
