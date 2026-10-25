@@ -1,5 +1,5 @@
 name: hairextensions
-description: Price to Profit. Offline-first pricing, quoting and invoicing for hair extension professionals.
+description: hairextensions is Price to Profit. Offline-first pricing, quoting and invoicing for hair extension professionals.
 publish_to: none
 version: 1.0.0+1
 
@@ -94,5 +94,5 @@ flutter:
 flutter_launcher_icons:
   android: true
   ios: true
-  image_path: "assets/images/gramulate_logo.png"
+  image_path: "assets/images/app_logo.png"
   remove_alpha_ios: true

@@ -12,7 +12,7 @@ class AuthScaffold extends StatelessWidget {
   const AuthScaffold({required this.title, required this.subtitle, required this.children, super.key, this.leading});
 
   static const double _washFade = 0.4;
-  static const double _wordmarkSize = 44;
+  static const double _wordmarkSize = 250;
 
   final String title;
   final String subtitle;
