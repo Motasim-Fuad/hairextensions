@@ -1,86 +1,136 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:hairextensions/core/identity/device_id_provider.dart';
+import 'package:fpdart/fpdart.dart';
+import 'package:hairextensions/core/errors/failures/failure.dart';
 import 'package:hairextensions/core/network/api_response/api_error_type.dart';
 import 'package:hairextensions/core/network/api_response/api_response.dart';
+import 'package:hairextensions/core/session/session_refresh.dart';
 import 'package:hairextensions/core/shared_entities/auth_tokens.dart';
-import 'package:hairextensions/core/utils/clock.dart';
-import 'package:hairextensions/core/utils/id_generator.dart';
 import 'package:hairextensions/features/auth/data/models/auth_tokens_model.dart';
+import 'package:hairextensions/features/auth/data/models/register_pending_model.dart';
 import 'package:hairextensions/features/auth/data/repositories/auth_repository_impl.dart';
 import 'package:mocktail/mocktail.dart';
-import 'package:uuid/uuid.dart';
 
-import '../../helpers/fakes/in_memory_key_value_store.dart';
+import '../../helpers/fakes/fake_app_session.dart';
+import '../../helpers/mocks/mock_account_restorer.dart';
 import '../../helpers/mocks/mock_auth_remote_data_source.dart';
 import '../../helpers/mocks/mock_secure_token_store.dart';
 
 void main() {
   late MockAuthRemoteDataSource remote;
   late MockSecureTokenStore tokens;
+  late MockAccountRestorer restorer;
+  late FakeAppSession session;
+  late SessionRefresh refresh;
   late AuthRepositoryImpl repository;
 
-  setUpAll(() => registerFallbackValue(const AuthTokens(accessToken: 'a', refreshToken: 'r')));
+  setUpAll(() => registerFallbackValue(const AuthTokens(accessToken: 'a')));
 
   setUp(() {
     remote = MockAuthRemoteDataSource();
     tokens = MockSecureTokenStore();
+    restorer = MockAccountRestorer();
+    session = FakeAppSession();
+    refresh = SessionRefresh();
     when(() => tokens.save(any())).thenAnswer((_) async {});
-    repository = AuthRepositoryImpl(
-      remote,
-      tokens,
-      DeviceIdProvider(InMemoryKeyValueStore(), IdGenerator(const Uuid())),
-      Clock(),
-    );
+    when(() => tokens.clear()).thenAnswer((_) async {});
+    when(() => restorer.clearLocal()).thenAnswer((_) async {});
+    when(() => restorer.restore()).thenAnswer((_) async => const Right<Failure, bool>(true));
+    repository = AuthRepositoryImpl(remote, tokens, session, restorer, refresh);
   });
 
-  void stubRegister(ApiResponse<AuthTokensModel> response) {
+  void stubLogin(ApiResponse<AuthTokensModel> response) {
     when(
-      () => remote.registerDevice(
-        deviceId: any(named: 'deviceId'),
-        platform: any(named: 'platform'),
-      ),
+      () => remote.login(email: any(named: 'email'), password: any(named: 'password')),
     ).thenAnswer((_) async => response);
   }
 
-  test('reuses stored tokens without calling the server', () async {
-    when(() => tokens.read()).thenAnswer((_) async => const AuthTokens(accessToken: 'a', refreshToken: 'r'));
+  group('login', () {
+    test('stores the token, restores the business and marks the session signed in', () async {
+      stubLogin(ApiResponse.success(const AuthTokensModel(accessToken: 'token')));
 
-    final result = await repository.ensureSession();
+      final result = await repository.login(email: 'amna@example.com', password: 'secret123');
 
-    expect(result.isRight(), isTrue);
-    verifyNever(
-      () => remote.registerDevice(
-        deviceId: any(named: 'deviceId'),
-        platform: any(named: 'platform'),
-      ),
-    );
+      expect(result.isRight(), isTrue);
+      verify(() => tokens.save(const AuthTokens(accessToken: 'token'))).called(1);
+      verify(() => restorer.restore()).called(1);
+      expect(session.signedIn, isTrue);
+    });
+
+    test('wrong credentials store nothing and leave the session signed out', () async {
+      stubLogin(ApiResponse.failure(statusCode: 401, message: 'Invalid credentials'));
+
+      final result = await repository.login(email: 'amna@example.com', password: 'nope');
+
+      expect(result.isLeft(), isTrue);
+      verifyNever(() => tokens.save(any()));
+      verifyNever(() => restorer.restore());
+      expect(session.signedIn, isFalse);
+    });
+
+    test('an offline restore rolls the sign-in back so it can be retried', () async {
+      stubLogin(ApiResponse.success(const AuthTokensModel(accessToken: 'token')));
+      when(() => restorer.restore()).thenAnswer((_) async => const Left<Failure, bool>(LocalStorageFailure()));
+
+      final result = await repository.login(email: 'amna@example.com', password: 'secret123');
+
+      expect(result.isLeft(), isTrue);
+      verify(() => tokens.clear()).called(1);
+      expect(session.signedIn, isFalse);
+    });
   });
 
-  test('registers the device once and stores the tokens', () async {
-    when(() => tokens.read()).thenAnswer((_) async => null);
-    stubRegister(
-      ApiResponse.success(const AuthTokensModel(accessToken: 'a', refreshToken: 'r', expiresInSeconds: 60)),
-    );
+  group('registration', () {
+    test('keeps the code a local backend returns, once', () async {
+      when(
+        () => remote.register(name: any(named: 'name'), email: any(named: 'email'), password: any(named: 'password')),
+      ).thenAnswer(
+        (_) async => ApiResponse.success(
+          const RegisterPendingModel(email: 'amna@example.com', message: 'sent', otp: '123456'),
+          statusCode: 201,
+        ),
+      );
 
-    final results = await Future.wait([repository.ensureSession(), repository.ensureSession()]);
+      final result = await repository.register(name: 'Amna', email: 'Amna@Example.com', password: 'secret123');
 
-    expect(results.every((result) => result.isRight()), isTrue);
-    verify(
-      () => remote.registerDevice(
-        deviceId: any(named: 'deviceId'),
-        platform: any(named: 'platform'),
-      ),
-    ).called(1);
-    verify(() => tokens.save(any())).called(1);
+      expect(result.isRight(), isTrue);
+      expect(repository.takePendingOtp('amna@example.com'), '123456');
+      expect(repository.takePendingOtp('amna@example.com'), isNull);
+    });
+
+    test('a failed registration reports the failure', () async {
+      when(
+        () => remote.register(name: any(named: 'name'), email: any(named: 'email'), password: any(named: 'password')),
+      ).thenAnswer((_) async => ApiResponse.failure(errorType: ApiErrorType.network));
+
+      final result = await repository.register(name: 'Amna', email: 'amna@example.com', password: 'secret123');
+
+      expect(result.isLeft(), isTrue);
+    });
+
+    test('verifying the code maps a rejected code to a failure', () async {
+      when(
+        () => remote.verifyOtp(email: any(named: 'email'), otp: any(named: 'otp')),
+      ).thenAnswer((_) async => ApiResponse<void>.failure(statusCode: 400, message: 'Invalid code'));
+
+      final result = await repository.verifyOtp(email: 'amna@example.com', otp: '000000');
+
+      expect(result.isLeft(), isTrue);
+    });
   });
 
-  test('offline registration fails without storing anything', () async {
-    when(() => tokens.read()).thenAnswer((_) async => null);
-    stubRegister(ApiResponse.failure(errorType: ApiErrorType.network));
+  test('ending the session clears the token and local data and notifies the router', () async {
+    session
+      ..signedIn = true
+      ..setupCompleted = true;
+    var notified = 0;
+    refresh.addListener(() => notified++);
 
-    final result = await repository.ensureSession();
+    await repository.endSession();
 
-    expect(result.isLeft(), isTrue);
-    verifyNever(() => tokens.save(any()));
+    verify(() => tokens.clear()).called(1);
+    verify(() => restorer.clearLocal()).called(1);
+    expect(session.signedIn, isFalse);
+    expect(session.setupCompleted, isFalse);
+    expect(notified, 1);
   });
 }

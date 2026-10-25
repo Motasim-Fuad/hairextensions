@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:fpdart/fpdart.dart';
+import 'package:hairextensions/core/di/di_env.dart';
 import 'package:hairextensions/core/errors/failures/failure.dart';
 import 'package:hairextensions/core/shared_entities/material_item.dart';
 import 'package:hairextensions/core/shared_entities/product.dart';
@@ -12,7 +13,7 @@ import 'package:injectable/injectable.dart';
 
 /// In-memory library seeded with sample data so every screen can be demoed.
 /// Swap for a sqflite-backed implementation without touching presentation.
-@LazySingleton(as: LibraryRepository)
+@LazySingleton(as: LibraryRepository, env: DiEnv.mockOnly)
 class DemoLibraryRepository implements LibraryRepository {
   DemoLibraryRepository(Clock clock) : _products = DemoCatalog.products(clock.now());
 

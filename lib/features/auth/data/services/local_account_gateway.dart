@@ -1,27 +1,31 @@
 import 'package:hairextensions/features/auth/domain/services/account_gateway.dart';
 
-/// Placeholder used until the account API is connected: waits briefly like a
-/// network call would, then accepts everything. It stores nothing and checks
-/// no credentials.
+/// Offline stand-in kept for widget tests and the mock environment: waits
+/// briefly like a network call would, then accepts everything.
 class LocalAccountGateway implements AccountGateway {
   const LocalAccountGateway();
 
   static const Duration _latency = Duration(milliseconds: 700);
 
   @override
-  Future<bool> logIn({required String email, required String password}) async {
-    await Future<void>.delayed(_latency);
-    return true;
-  }
+  Future<bool> logIn({required String email, required String password}) => _accept();
 
   @override
-  Future<bool> register({required String name, required String email, required String password}) async {
-    await Future<void>.delayed(_latency);
-    return true;
-  }
+  Future<bool> register({required String name, required String email, required String password}) => _accept();
 
   @override
-  Future<bool> requestPasswordReset({required String email}) async {
+  Future<bool> verifyOtp({required String email, required String otp}) => _accept();
+
+  @override
+  Future<bool> resendOtp({required String email}) => _accept();
+
+  @override
+  String? takePendingOtp(String email) => null;
+
+  @override
+  Future<bool> requestPasswordReset({required String email}) => _accept();
+
+  Future<bool> _accept() async {
     await Future<void>.delayed(_latency);
     return true;
   }

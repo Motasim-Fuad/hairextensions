@@ -1,6 +1,7 @@
 abstract final class StorageKeys {
   static const String onboardingSeen = 'onboarding_seen';
   static const String setupCompleted = 'setup_completed';
+  static const String signedIn = 'signed_in';
   static const String subscriptionStatus = 'subscription_status';
   static const String deviceId = 'device_id';
   static const String analyticsConsent = 'consent_analytics';

@@ -17,6 +17,18 @@ class KeyValueAppSession implements AppSession {
   bool get setupCompleted => _store.peekBool(StorageKeys.setupCompleted) ?? false;
 
   @override
+  bool get signedIn => _store.peekBool(StorageKeys.signedIn) ?? false;
+
+  @override
+  Future<void> markSignedIn() => _store.setBool(StorageKeys.signedIn, value: true);
+
+  @override
+  Future<void> markSignedOut() async {
+    await _store.setBool(StorageKeys.signedIn, value: false);
+    await _store.setBool(StorageKeys.setupCompleted, value: false);
+  }
+
+  @override
   Future<void> markOnboardingSeen() => _store.setBool(StorageKeys.onboardingSeen, value: true);
 
   @override

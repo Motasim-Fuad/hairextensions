@@ -1,9 +1,15 @@
 import 'package:hairextensions/core/constants/network_constants.dart';
 
 abstract final class AuthEndpoints {
-  static const String registerDevice = '/auth/device';
-  static const String refresh = NetworkConstants.refreshPath;
-  static const String deviceIdKey = 'device_id';
-  static const String platformKey = 'platform';
-  static const String refreshTokenKey = 'refresh_token';
+  static const String _base = '${NetworkConstants.apiPrefix}/auth';
+
+  static const String register = '$_base/register';
+  static const String verifyOtp = '$_base/verify-otp';
+  static const String resendOtp = '$_base/resend-otp';
+  static const String login = '$_base/login';
+
+  static const String emailKey = 'email';
+  static const String nameKey = 'name';
+  static const String passwordKey = 'password';
+  static const String otpKey = 'otp';
 }

@@ -204,6 +204,12 @@ class SqfliteSyncQueue implements SyncQueue {
   }
 
   @override
+  Future<void> clearAll() async {
+    final db = await _database.database;
+    await db.delete(SyncQueueTable.name);
+  }
+
+  @override
   Future<int> pendingCount() async {
     final db = await _database.database;
     final result = await db.rawQuery(

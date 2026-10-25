@@ -1,32 +1,31 @@
 import 'package:hairextensions/core/shared_entities/auth_tokens.dart';
 
-/// Matches the FastAPI OAuth2 token response.
+/// Matches the API `TokenResponse`:
+/// {access_token, token_type, expires_at, user: {id, email, name, ...}}.
 class AuthTokensModel {
-  const AuthTokensModel({required this.accessToken, required this.refreshToken, this.expiresInSeconds});
+  const AuthTokensModel({required this.accessToken, this.expiresAt, this.userName, this.userEmail});
 
   factory AuthTokensModel.fromJson(Object? json) {
     final map = json! as Map<String, dynamic>;
+    final user = map[_userKey];
     return AuthTokensModel(
       accessToken: map[_accessTokenKey] as String,
-      refreshToken: map[_refreshTokenKey] as String,
-      expiresInSeconds: (map[_expiresInKey] as num?)?.toInt(),
+      expiresAt: DateTime.tryParse('${map[_expiresAtKey] ?? ''}'),
+      userName: user is Map ? user[_nameKey] as String? : null,
+      userEmail: user is Map ? user[_emailKey] as String? : null,
     );
   }
 
   static const String _accessTokenKey = 'access_token';
-  static const String _refreshTokenKey = 'refresh_token';
-  static const String _expiresInKey = 'expires_in';
+  static const String _expiresAtKey = 'expires_at';
+  static const String _userKey = 'user';
+  static const String _nameKey = 'name';
+  static const String _emailKey = 'email';
 
   final String accessToken;
-  final String refreshToken;
-  final int? expiresInSeconds;
+  final DateTime? expiresAt;
+  final String? userName;
+  final String? userEmail;
 
-  AuthTokens toEntity(DateTime now) {
-    final expiresIn = expiresInSeconds;
-    return AuthTokens(
-      accessToken: accessToken,
-      refreshToken: refreshToken,
-      expiresAt: expiresIn == null ? null : now.add(Duration(seconds: expiresIn)),
-    );
-  }
+  AuthTokens toEntity() => AuthTokens(accessToken: accessToken, expiresAt: expiresAt?.toUtc());
 }

@@ -9,7 +9,7 @@ enum FeatureKey {
   library('feature_library', 'library', defaultEnabled: true),
   subscriptions('feature_subscriptions', 'subscriptions', defaultEnabled: true),
   quoteDuplicate('feature_quote_duplicate', 'quote_duplicate', defaultEnabled: true),
-  cloudSync('feature_cloud_sync', 'cloud_sync', defaultEnabled: false),
+  cloudSync('feature_cloud_sync', 'cloud_sync', defaultEnabled: true),
   pushNotifications('feature_push_notifications', 'push_notifications', defaultEnabled: false);
 
   const FeatureKey(this.remoteKey, this.analyticsName, {required this.defaultEnabled});

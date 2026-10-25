@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:hairextensions/core/feature_flags/app_gate_evaluator.dart';
+import 'package:hairextensions/core/feature_flags/app_links_config.dart';
 import 'package:hairextensions/core/feature_flags/app_gate_status.dart';
 import 'package:hairextensions/core/feature_flags/app_status_config.dart';
 import 'package:hairextensions/core/feature_flags/app_version.dart';
@@ -22,6 +23,8 @@ class AppGateService extends ChangeNotifier {
   AppGateStatus get status => _status;
 
   AppStatusConfig get config => _flags.appStatus;
+
+  AppLinksConfig get links => _flags.links;
 
   String? get installedVersion => _installed?.toString();
 

@@ -13,11 +13,13 @@ import 'package:hairextensions/core/feature_flags/app_gate_service.dart';
 import 'package:hairextensions/core/feature_flags/feature_flag_service.dart';
 import 'package:hairextensions/core/links/link_launcher.dart';
 import 'package:hairextensions/core/routing/app_routes.dart';
+import 'package:hairextensions/core/session/session_refresh.dart';
 import 'package:hairextensions/core/shared_entities/product.dart';
 import 'package:hairextensions/core/subscription/subscription_service.dart';
 import 'package:hairextensions/features/business_setup/presentation/routes/business_setup_routes.dart';
 import 'package:hairextensions/features/auth/presentation/pages/forgot_password/forgot_password_page.dart';
 import 'package:hairextensions/features/auth/presentation/pages/login/login_page.dart';
+import 'package:hairextensions/features/auth/presentation/pages/otp/otp_page.dart';
 import 'package:hairextensions/features/auth/presentation/pages/register/register_page.dart';
 import 'package:hairextensions/features/library/presentation/pages/library/library_page.dart';
 import 'package:hairextensions/features/library/presentation/pages/product_form/product_form_page.dart';
@@ -49,6 +51,7 @@ class AppRouter {
     this._subscription,
     this._screenViews,
     this._launcher,
+    this._sessionRefresh,
   );
 
   final RouteGuardChain _guards;
@@ -57,12 +60,13 @@ class AppRouter {
   final SubscriptionService _subscription;
   final ScreenViewTracker _screenViews;
   final LinkLauncher _launcher;
+  final SessionRefresh _sessionRefresh;
   final GlobalKey<NavigatorState> _rootKey = GlobalKey<NavigatorState>(debugLabel: 'root');
 
   late final GoRouter config = GoRouter(
     navigatorKey: _rootKey,
     initialLocation: AppRoutes.homePath,
-    refreshListenable: Listenable.merge([_gate, _flags, _subscription]),
+    refreshListenable: Listenable.merge([_gate, _flags, _subscription, _sessionRefresh]),
     redirect: (_, state) => _guards.redirect(state.uri),
     observers: [AnalyticsRouteObserver(_screenViews)],
     errorBuilder: (context, _) => AppErrorScreen(onGoHome: () => context.go(AppRoutes.homePath)),
@@ -90,6 +94,15 @@ class AppRouter {
         pageBuilder: (_, state) => FadeSlidePage<void>(
           state: state,
           child: const RegisterPage(),
+        ),
+      ),
+      GoRoute(
+        path: AppRoutes.verifyOtpPath,
+        name: AppRoutes.verifyOtp,
+        redirect: (_, state) => state.extra is OtpArguments ? null : AppRoutes.registerPath,
+        pageBuilder: (_, state) => FadeSlidePage<void>(
+          state: state,
+          child: OtpPage(arguments: state.extra! as OtpArguments),
         ),
       ),
       GoRoute(

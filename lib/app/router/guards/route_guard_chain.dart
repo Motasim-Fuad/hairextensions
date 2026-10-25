@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:hairextensions/app/router/guards/app_gate_guard.dart';
+import 'package:hairextensions/app/router/guards/auth_guard.dart';
 import 'package:hairextensions/app/router/guards/feature_flag_guard.dart';
 import 'package:hairextensions/app/router/guards/onboarding_guard.dart';
 import 'package:hairextensions/app/router/guards/route_guard.dart';
@@ -14,10 +15,11 @@ class RouteGuardChain {
   RouteGuardChain(
     AppGateGuard gate,
     OnboardingGuard onboarding,
+    AuthGuard auth,
     SetupGuard setup,
     FeatureFlagGuard featureFlags,
     SubscriptionGuard subscription,
-  ) : _guards = [gate, onboarding, setup, featureFlags, subscription];
+  ) : _guards = [gate, onboarding, auth, setup, featureFlags, subscription];
 
   @visibleForTesting
   RouteGuardChain.of(this._guards);

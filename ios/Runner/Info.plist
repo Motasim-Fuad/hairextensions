@@ -7,7 +7,7 @@
 		<key>CFBundleDevelopmentRegion</key>
 		<string>$(DEVELOPMENT_LANGUAGE)</string>
 		<key>CFBundleDisplayName</key>
-		<string>Price to Profit</string>
+		<string>gramulate</string>
 		<key>CFBundleURLTypes</key>
 		<array>
 			<dict>

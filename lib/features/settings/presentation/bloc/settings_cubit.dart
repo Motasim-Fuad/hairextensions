@@ -18,11 +18,13 @@ part 'settings_state.dart';
 
 @injectable
 class SettingsCubit extends Cubit<SettingsState> {
-  SettingsCubit(this._profiles, this._catalog, this._subscription, this._config, this._links,this._authRepository, AppGateService gate)
-    : super(SettingsState(isPro: _subscription.isPro, version: gate.installedVersion));
+  SettingsCubit(this._profiles, this._catalog, this._subscription, this._config, this._links, this._authRepository, this._gate)
+    : super(SettingsState(isPro: _subscription.isPro, version: _gate.installedVersion));
 
   static const String _manageSubscriptionsUrl = 'https://apps.apple.com/account/subscriptions';
   static const String _mailScheme = 'mailto:';
+  static const String _whatsappBase = 'https://wa.me/';
+  static final RegExp _nonDigits = RegExp('[^0-9]');
 
   final BusinessProfileReader _profiles;
   final CatalogReader _catalog;
@@ -31,6 +33,7 @@ class SettingsCubit extends Cubit<SettingsState> {
   final LinkLauncher _links;
   final List<StreamSubscription<Object?>> _subscriptions = [];
   final AuthRepository _authRepository;
+  final AppGateService _gate;
 
   void start() {
     _subscription.addListener(_onSubscription);
@@ -43,17 +46,32 @@ class SettingsCubit extends Cubit<SettingsState> {
 
   void _onSubscription() => emit(state.copyWith(isPro: _subscription.isPro));
 
-  Future<void> openPrivacy() => _open(_config.privacyPolicyUrl);
+  String get _privacyUrl => _gate.links.privacyUrl.isNotEmpty ? _gate.links.privacyUrl : _config.privacyPolicyUrl;
 
-  Future<void> openTerms() => _open(_config.termsUrl);
+  String get _termsUrl => _gate.links.termsUrl.isNotEmpty ? _gate.links.termsUrl : _config.termsUrl;
 
-  Future<void> contactSupport() => _open('$_mailScheme${_config.supportEmail}');
+  /// E-mail first, WhatsApp as the fallback; null when the backend has neither.
+  String? get _supportUrl {
+    final email = _gate.links.supportEmail.isNotEmpty ? _gate.links.supportEmail : _config.supportEmail;
+    if (email.isNotEmpty) {
+      return '$_mailScheme$email';
+    }
+    final digits = _gate.links.supportWhatsapp.replaceAll(_nonDigits, '');
+    return digits.isEmpty ? null : '$_whatsappBase$digits';
+  }
+
+  bool get hasPrivacyLink => _privacyUrl.isNotEmpty;
+
+  bool get hasTermsLink => _termsUrl.isNotEmpty;
+
+  bool get hasSupportLink => _supportUrl != null;
 
   Future<void> manageSubscription() => _open(_manageSubscriptionsUrl);
 
-  /// Store billing is not wired yet; the mock environment restores locally.
+  /// Store billing is not wired yet. Mock and non-production builds restore
+  /// locally so the whole flow can be tried; production reports an error.
   Future<void> restore() async {
-    if (_config.environment != AppEnvironment.mock) {
+    if (_config.environment != AppEnvironment.mock && _config.isProduction) {
       emit(state.copyWith(errorKind: SettingsError.purchase));
       return;
     }
@@ -61,7 +79,17 @@ class SettingsCubit extends Cubit<SettingsState> {
     emit(state.copyWith(clearError: true));
   }
 
+  Future<void> openPrivacy() => _open(_privacyUrl);
+
+  Future<void> openTerms() => _open(_termsUrl);
+
+  Future<void> contactSupport() => _open(_supportUrl ?? '');
+
   Future<void> _open(String url) async {
+    if (url.isEmpty) {
+      emit(state.copyWith(errorKind: SettingsError.link));
+      return;
+    }
     final opened = await _links.open(url);
     if (!isClosed) {
       emit(opened ? state.copyWith(clearError: true) : state.copyWith(errorKind: SettingsError.link));

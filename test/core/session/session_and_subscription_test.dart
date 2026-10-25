@@ -20,6 +20,19 @@ void main() {
       expect(store.peekBool(StorageKeys.onboardingSeen), isTrue);
       expect(KeyValueAppSession(store).setupCompleted, isTrue);
     });
+
+    test('signing out also resets setup so the next account decides for itself', () async {
+      final store = InMemoryKeyValueStore();
+      final session = KeyValueAppSession(store);
+      await session.markSetupCompleted();
+      await session.markSignedIn();
+      expect(session.signedIn, isTrue);
+
+      await session.markSignedOut();
+
+      expect(KeyValueAppSession(store).signedIn, isFalse);
+      expect(KeyValueAppSession(store).setupCompleted, isFalse);
+    });
   });
 
   group('CachedSubscriptionService', () {

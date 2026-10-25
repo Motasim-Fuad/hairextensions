@@ -129,8 +129,10 @@ class _QuoteBuilderViewState extends State<QuoteBuilderView> {
         return Scaffold(
           appBar: AppTopBar(
             leading: const AppBackButton(icon: AppIcon.close),
-            title: context.l10n.builderTitle,
-            subtitle: context.l10n.builderSubtitle(state.number),
+            title: state.kind.isInvoice ? context.l10n.builderTitleInvoice : context.l10n.builderTitle,
+            subtitle: state.number.isEmpty
+                ? context.l10n.builderNumberPending
+                : context.l10n.builderSubtitle(state.number),
             trailing: [
               AppStatusChip(label: context.l10n.statusDraft, tone: StatusTone.neutral),
               const SizedBox(width: AppSpacing.sm),
@@ -158,6 +160,7 @@ class _QuoteBuilderViewState extends State<QuoteBuilderView> {
             balanceMinor: totals.balanceMinor,
             currency: state.currency,
             onReview: _review,
+            isInvoice: state.kind.isInvoice,
           ),
         );
       },

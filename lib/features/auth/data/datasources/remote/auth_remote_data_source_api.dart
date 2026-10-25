@@ -6,10 +6,11 @@ import 'package:hairextensions/core/network/client/api_client.dart';
 import 'package:hairextensions/features/auth/data/datasources/remote/auth_endpoints.dart';
 import 'package:hairextensions/features/auth/data/datasources/remote/auth_remote_data_source.dart';
 import 'package:hairextensions/features/auth/data/models/auth_tokens_model.dart';
+import 'package:hairextensions/features/auth/data/models/register_pending_model.dart';
 import 'package:injectable/injectable.dart';
 
-/// Uses the bare client: neither call carries a bearer token, and a failing
-/// refresh must never trigger another refresh.
+/// Uses the bare client: these calls are public and carry no bearer token, and
+/// a 401 here means wrong credentials, not an expired session.
 @LazySingleton(as: AuthRemoteDataSource, env: DiEnv.remote)
 class AuthRemoteDataSourceApi implements AuthRemoteDataSource {
   AuthRemoteDataSourceApi(@Named(DiNames.bareDio) Dio dio) : _client = ApiClient(dio);
@@ -17,19 +18,41 @@ class AuthRemoteDataSourceApi implements AuthRemoteDataSource {
   final ApiClient _client;
 
   @override
-  Future<ApiResponse<AuthTokensModel>> registerDevice({required String deviceId, required String platform}) {
+  Future<ApiResponse<RegisterPendingModel>> register({
+    required String name,
+    required String email,
+    required String password,
+  }) {
     return _client.post(
-      AuthEndpoints.registerDevice,
-      body: {AuthEndpoints.deviceIdKey: deviceId, AuthEndpoints.platformKey: platform},
-      parser: AuthTokensModel.fromJson,
+      AuthEndpoints.register,
+      body: {AuthEndpoints.nameKey: name, AuthEndpoints.emailKey: email, AuthEndpoints.passwordKey: password},
+      parser: RegisterPendingModel.fromJson,
     );
   }
 
   @override
-  Future<ApiResponse<AuthTokensModel>> refresh(String refreshToken) {
+  Future<ApiResponse<void>> verifyOtp({required String email, required String otp}) {
+    return _client.post<void>(
+      AuthEndpoints.verifyOtp,
+      body: {AuthEndpoints.emailKey: email, AuthEndpoints.otpKey: otp},
+      parser: (_) {},
+    );
+  }
+
+  @override
+  Future<ApiResponse<RegisterPendingModel>> resendOtp({required String email}) {
     return _client.post(
-      AuthEndpoints.refresh,
-      body: {AuthEndpoints.refreshTokenKey: refreshToken},
+      AuthEndpoints.resendOtp,
+      body: {AuthEndpoints.emailKey: email},
+      parser: RegisterPendingModel.fromJson,
+    );
+  }
+
+  @override
+  Future<ApiResponse<AuthTokensModel>> login({required String email, required String password}) {
+    return _client.post(
+      AuthEndpoints.login,
+      body: {AuthEndpoints.emailKey: email, AuthEndpoints.passwordKey: password},
       parser: AuthTokensModel.fromJson,
     );
   }

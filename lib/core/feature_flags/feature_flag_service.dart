@@ -1,4 +1,5 @@
 import 'package:flutter/foundation.dart';
+import 'package:hairextensions/core/feature_flags/app_links_config.dart';
 import 'package:hairextensions/core/feature_flags/app_status_config.dart';
 import 'package:hairextensions/core/feature_flags/app_version.dart';
 import 'package:hairextensions/core/feature_flags/beta_targeting.dart';
@@ -46,6 +47,13 @@ class FeatureFlagService extends ChangeNotifier {
     storeUrl: stringValue(
       defaultTargetPlatform == TargetPlatform.iOS ? RemoteConfigKeys.storeUrlIos : RemoteConfigKeys.storeUrlAndroid,
     ),
+  );
+
+  AppLinksConfig get links => AppLinksConfig(
+    termsUrl: stringValue(RemoteConfigKeys.termsUrl).trim(),
+    privacyUrl: stringValue(RemoteConfigKeys.privacyUrl).trim(),
+    supportEmail: stringValue(RemoteConfigKeys.supportEmail).trim(),
+    supportWhatsapp: stringValue(RemoteConfigKeys.supportWhatsapp).trim(),
   );
 
   /// Concurrent callers share one fetch.

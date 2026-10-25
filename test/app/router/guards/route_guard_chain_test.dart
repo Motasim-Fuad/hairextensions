@@ -1,5 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hairextensions/app/router/guards/app_gate_guard.dart';
+import 'package:hairextensions/app/router/guards/auth_guard.dart';
 import 'package:hairextensions/app/router/guards/feature_flag_guard.dart';
 import 'package:hairextensions/app/router/guards/onboarding_guard.dart';
 import 'package:hairextensions/app/router/guards/route_guard_chain.dart';
@@ -28,7 +29,7 @@ void main() {
   setUp(() {
     gate = MockAppGateService();
     when(() => gate.status).thenReturn(AppGateStatus.ok);
-    session = FakeAppSession();
+    session = FakeAppSession(signedIn: true);
     subscription = FakeSubscriptionService();
   });
 
@@ -37,6 +38,7 @@ void main() {
     final chain = RouteGuardChain(
       AppGateGuard(gate),
       OnboardingGuard(session),
+      AuthGuard(session),
       SetupGuard(session),
       FeatureFlagGuard(features),
       SubscriptionGuard(subscription, features),
@@ -84,6 +86,25 @@ void main() {
       ..setupCompleted = true;
     subscription.status = SubscriptionStatus.active;
     expect(land(AppRoutes.newQuotePath), AppRoutes.newQuotePath);
+  });
+
+  test('a signed-out user is sent to log in from every protected route', () {
+    session
+      ..onboardingSeen = true
+      ..signedIn = false;
+    expect(land(AppRoutes.homePath), AppRoutes.loginPath);
+    expect(land(AppRoutes.newQuotePath), AppRoutes.loginPath);
+    expect(land(AppRoutes.loginPath), AppRoutes.loginPath);
+    expect(land(AppRoutes.registerPath), AppRoutes.registerPath);
+    expect(land(AppRoutes.verifyOtpPath), AppRoutes.verifyOtpPath);
+  });
+
+  test('a signed-in user never sees the log in screens', () {
+    session
+      ..onboardingSeen = true
+      ..setupCompleted = true;
+    expect(land(AppRoutes.loginPath), AppRoutes.homePath);
+    expect(land(AppRoutes.registerPath), AppRoutes.homePath);
   });
 
   test('maintenance wins over every other rule, even on first launch', () {

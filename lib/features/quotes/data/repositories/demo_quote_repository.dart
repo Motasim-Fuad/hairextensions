@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:fpdart/fpdart.dart';
+import 'package:hairextensions/core/di/di_env.dart';
 import 'package:hairextensions/core/errors/failures/failure.dart';
 import 'package:hairextensions/core/utils/clock.dart';
 import 'package:hairextensions/features/quotes/data/demo/demo_quotes.dart';
@@ -13,7 +14,7 @@ import 'package:injectable/injectable.dart';
 
 /// In-memory quotes seeded with sample data so every screen can be demoed.
 /// Swap for a sqflite-backed implementation without touching presentation.
-@LazySingleton(as: QuoteRepository)
+@LazySingleton(as: QuoteRepository, env: DiEnv.mockOnly)
 class DemoQuoteRepository implements QuoteRepository {
   DemoQuoteRepository(this._clock) : _quotes = DemoQuotes.build(_clock.now());
 

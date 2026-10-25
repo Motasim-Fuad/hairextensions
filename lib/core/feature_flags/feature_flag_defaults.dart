@@ -12,6 +12,10 @@ abstract final class FeatureFlagDefaults {
     RemoteConfigKeys.maintenanceMessage: '',
     RemoteConfigKeys.storeUrlAndroid: '',
     RemoteConfigKeys.storeUrlIos: '',
+    RemoteConfigKeys.termsUrl: '',
+    RemoteConfigKeys.privacyUrl: '',
+    RemoteConfigKeys.supportEmail: '',
+    RemoteConfigKeys.supportWhatsapp: '',
   };
 
   static Map<String, String> get asStrings => all.map((key, value) => MapEntry(key, '$value'));

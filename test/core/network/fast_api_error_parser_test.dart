@@ -27,6 +27,26 @@ void main() {
     });
   });
 
+  test('reads the Price to Profit error envelope', () {
+    final body = {
+      'error': {
+        'code': 'validation_error',
+        'message': 'The request is not valid.',
+        'details': [
+          {
+            'location': ['body', 'quote_prefix'],
+            'message': 'String should match pattern',
+            'type': 'string_pattern_mismatch',
+          },
+        ],
+      },
+    };
+
+    expect(FastApiErrorParser.message(body), 'The request is not valid.');
+    expect(FastApiErrorParser.code(body), 'validation_error');
+    expect(FastApiErrorParser.fieldErrors(body), {'quote_prefix': 'String should match pattern'});
+  });
+
   test('returns null for unknown shapes', () {
     expect(FastApiErrorParser.message({'error': 1}), isNull);
     expect(FastApiErrorParser.fieldErrors('oops'), isEmpty);

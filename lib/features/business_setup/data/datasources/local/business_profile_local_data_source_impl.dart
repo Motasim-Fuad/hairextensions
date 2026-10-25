@@ -44,6 +44,12 @@ class BusinessProfileLocalDataSourceImpl implements BusinessProfileLocalDataSour
   }
 
   @override
+  Future<void> clear() async {
+    final db = await _database.database;
+    await db.delete(BusinessProfileTable.name);
+  }
+
+  @override
   @disposeMethod
   Future<void> dispose() => _changes.close();
 }

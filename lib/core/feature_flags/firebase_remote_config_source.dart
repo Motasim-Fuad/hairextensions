@@ -7,7 +7,7 @@ import 'package:injectable/injectable.dart';
 
 /// Fetch-on-demand only. The realtime listener is not used because it keeps a
 /// long-lived connection open, which costs battery for little benefit here.
-@LazySingleton(as: FeatureFlagSource)
+@lazySingleton
 class FirebaseRemoteConfigSource implements FeatureFlagSource {
   FirebaseRemoteConfigSource(this._firebase);
 

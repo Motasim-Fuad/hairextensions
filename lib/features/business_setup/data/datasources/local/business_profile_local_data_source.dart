@@ -5,6 +5,9 @@ abstract interface class BusinessProfileLocalDataSource {
 
   Future<void> upsert(BusinessProfileModel model);
 
+  /// Removes the stored profile, used when the account signs out.
+  Future<void> clear();
+
   /// Emits after every [upsert]. Does not replay the current value.
   Stream<BusinessProfileModel> get changes;
 

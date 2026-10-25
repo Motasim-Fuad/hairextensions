@@ -16,7 +16,7 @@ class BusinessLogo extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final path = logoPath;
-    if (path == null || path.isEmpty) {
+    if (path == null || path.isEmpty || !File(path).existsSync()) {
       return MonogramAvatar(name: businessName, size: size);
     }
     final cacheSize = (size * MediaQuery.devicePixelRatioOf(context)).round();

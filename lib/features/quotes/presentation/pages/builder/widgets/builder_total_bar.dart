@@ -17,12 +17,14 @@ class BuilderTotalBar extends StatelessWidget {
     required this.currency,
     required this.onReview,
     super.key,
+    this.isInvoice = false,
   });
 
   final int totalMinor;
   final int balanceMinor;
   final String currency;
   final VoidCallback onReview;
+  final bool isInvoice;
 
   @override
   Widget build(BuildContext context) {
@@ -65,7 +67,11 @@ class BuilderTotalBar extends StatelessWidget {
                   ),
                 ],
               ),
-              AppPrimaryButton(label: l10n.actionReviewQuote, trailingIcon: AppIcon.chevronRight, onPressed: onReview),
+              AppPrimaryButton(
+                label: isInvoice ? l10n.actionReviewInvoice : l10n.actionReviewQuote,
+                trailingIcon: AppIcon.chevronRight,
+                onPressed: onReview,
+              ),
             ],
           ),
         ),

@@ -4,6 +4,7 @@ import 'package:hairextensions/core/database/tables/business_profile_table.dart'
 import 'package:hairextensions/core/errors/failures/failure.dart';
 import 'package:hairextensions/core/errors/run_local.dart';
 import 'package:hairextensions/core/media/image_permission_denied_exception.dart';
+import 'package:hairextensions/core/network/mappers/api_failure_mapper.dart';
 import 'package:hairextensions/core/media/image_source_picker.dart';
 import 'package:hairextensions/core/session/app_session.dart';
 import 'package:hairextensions/core/shared_entities/business_profile.dart';
@@ -12,6 +13,7 @@ import 'package:hairextensions/core/sync/sync_queue.dart';
 import 'package:hairextensions/core/utils/clock.dart';
 import 'package:hairextensions/features/business_setup/data/datasources/local/business_profile_local_data_source.dart';
 import 'package:hairextensions/features/business_setup/data/datasources/local/logo_file_store.dart';
+import 'package:hairextensions/features/business_setup/data/datasources/remote/business_profile_remote_data_source.dart';
 import 'package:hairextensions/features/business_setup/data/mappers/business_profile_mapper.dart';
 import 'package:hairextensions/features/business_setup/domain/repositories/business_profile_repository.dart';
 import 'package:injectable/injectable.dart';
@@ -27,6 +29,7 @@ class BusinessProfileRepositoryImpl implements BusinessProfileRepository {
     this._syncQueue,
     this._session,
     this._clock,
+    this._remote,
   );
 
   static const String _source = 'BusinessProfileRepository';
@@ -38,6 +41,7 @@ class BusinessProfileRepositoryImpl implements BusinessProfileRepository {
   final SyncQueue _syncQueue;
   final AppSession _session;
   final Clock _clock;
+  final BusinessProfileRemoteDataSource _remote;
 
   @override
   Future<Either<Failure, BusinessProfile?>> getProfile() {
@@ -48,8 +52,8 @@ class BusinessProfileRepositoryImpl implements BusinessProfileRepository {
   }
 
   @override
-  Future<Either<Failure, Unit>> saveProfile(BusinessProfile profile, {required bool completeSetup}) {
-    return runLocal(_source, () async {
+  Future<Either<Failure, Unit>> saveProfile(BusinessProfile profile, {required bool completeSetup}) async {
+    final saved = await runLocal(_source, () async {
       final existing = await _local.read();
       final now = _clock.now().millisecondsSinceEpoch;
       final model = BusinessProfileMapper.toModel(
@@ -64,13 +68,26 @@ class BusinessProfileRepositoryImpl implements BusinessProfileRepository {
         type: existing == null ? SyncOperationType.create : SyncOperationType.update,
         payload: model.toJson(),
       );
-      if (completeSetup) {
-        await _session.markSetupCompleted();
-      }
       final previousLogo = existing?.logoPath;
       if (previousLogo != null && previousLogo != profile.logoPath) {
         await _logos.delete(previousLogo);
       }
+      return model;
+    });
+    if (saved.isLeft()) {
+      return saved.map((_) => unit);
+    }
+    if (!completeSetup) {
+      return const Right(unit);
+    }
+    // Finishing setup creates the business on the server right now, so a
+    // rejected field shows up on the form instead of failing in the background.
+    final response = await _remote.push(saved.getOrElse((_) => throw StateError('saved')).toJson());
+    if (!response.isSuccess) {
+      return Left(ApiFailureMapper.toFailure(response));
+    }
+    return runLocal(_source, () async {
+      await _session.markSetupCompleted();
       return unit;
     });
   }

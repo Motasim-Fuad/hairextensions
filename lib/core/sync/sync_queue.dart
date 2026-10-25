@@ -36,5 +36,9 @@ abstract interface class SyncQueue {
 
   Future<int> pendingCount();
 
+  /// Drops every queued operation, used when the account signs out so one
+  /// stylist's pending writes never reach another account.
+  Future<void> clearAll();
+
   Future<void> dispose();
 }

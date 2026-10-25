@@ -63,7 +63,7 @@ android {
         }
         create("prod") {
             dimension = "environment"
-            resValue("string", "app_name", "Price to Profit")
+            resValue("string", "app_name", "gramulate")
         }
     }
 

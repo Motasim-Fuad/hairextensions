@@ -2,6 +2,8 @@ import 'package:hairextensions/core/config/app_environment.dart';
 import 'package:hairextensions/core/config/flavor.dart';
 
 /// Build-time configuration supplied through --dart-define. Holds no secrets.
+/// The legal and support values are optional fallbacks: the backend publishes
+/// the real ones through GET /v1/app-config.
 class AppConfig {
   const AppConfig({
     required this.flavor,
@@ -21,23 +23,23 @@ class AppConfig {
         const String.fromEnvironment('FLAVOR', defaultValue: 'dev'),
       ),
       environment: AppEnvironment.fromName(
-        const String.fromEnvironment('ENV', defaultValue: 'mock'),
+        const String.fromEnvironment('ENV', defaultValue: 'dev'),
       ),
       apiBaseUrl: const String.fromEnvironment(
         'API_BASE_URL',
-        defaultValue: 'https://api.example.com',
+        defaultValue: 'https://price-to-profit-alga-chul.onrender.com',
       ),
       privacyPolicyUrl: const String.fromEnvironment(
         'PRIVACY_POLICY_URL',
-        defaultValue: 'https://example.com/privacy',
+        defaultValue: '',
       ),
       termsUrl: const String.fromEnvironment(
         'TERMS_URL',
-        defaultValue: 'https://example.com/terms',
+        defaultValue: '',
       ),
       supportEmail: const String.fromEnvironment(
         'SUPPORT_EMAIL',
-        defaultValue: 'support@example.com',
+        defaultValue: '',
       ),
       enableCertificatePinning: const bool.fromEnvironment(
         'ENABLE_CERT_PINNING',

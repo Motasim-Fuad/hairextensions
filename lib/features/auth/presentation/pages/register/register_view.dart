@@ -9,6 +9,7 @@ import 'package:hairextensions/features/auth/presentation/bloc/auth_submit_statu
 import 'package:hairextensions/features/auth/presentation/bloc/register/register_cubit.dart';
 import 'package:hairextensions/features/auth/presentation/bloc/register/register_state.dart';
 import 'package:hairextensions/features/auth/presentation/extensions/auth_field_error_message.dart';
+import 'package:hairextensions/features/auth/presentation/pages/otp/otp_page.dart';
 import 'package:hairextensions/features/auth/presentation/widgets/auth_password_field.dart';
 import 'package:hairextensions/features/auth/presentation/widgets/auth_scaffold.dart';
 import 'package:hairextensions/features/auth/presentation/widgets/auth_switch_row.dart';
@@ -16,8 +17,8 @@ import 'package:hairextensions/features/auth/presentation/widgets/auth_terms_che
 import 'package:hairextensions/shared/widgets/buttons/app_primary_button.dart';
 import 'package:hairextensions/shared/widgets/inputs/app_text_field.dart';
 
-/// Create an account. A successful registration continues the first launch
-/// flow to the paywall.
+/// Create an account. A successful registration continues to the email code
+/// screen; signing in and business setup follow once the code is confirmed.
 class RegisterView extends StatefulWidget {
   const RegisterView({super.key});
 
@@ -65,7 +66,10 @@ class _RegisterViewState extends State<RegisterView> {
     return BlocConsumer<RegisterCubit, RegisterState>(
       listenWhen: (previous, current) =>
           previous.status != AuthSubmitStatus.success && current.status == AuthSubmitStatus.success,
-      listener: (context, _) => context.goNamed(AppRoutes.paywall),
+      listener: (context, _) => context.goNamed(
+        AppRoutes.verifyOtp,
+        extra: OtpArguments(email: _email.text.trim(), password: _password.text),
+      ),
       builder: (context, state) {
         return AuthScaffold(
           title: l10n.authRegisterTitle,

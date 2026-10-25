@@ -67,7 +67,7 @@ class QuoteReviewView extends StatelessWidget {
         return Scaffold(
           appBar: AppTopBar(
             leading: const AppBackButton(),
-            title: l10n.actionReviewQuote,
+            title: quote.status.isInvoice ? l10n.actionReviewInvoice : l10n.actionReviewQuote,
             trailing: [
               AppIconButton(icon: AppIcon.pen, semanticLabel: l10n.actionEdit, onPressed: () => context.pop()),
             ],

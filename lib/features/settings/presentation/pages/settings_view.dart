@@ -100,10 +100,11 @@ class SettingsView extends StatelessWidget {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(businessName, style: AppTextStyles.planTitle.copyWith(color: colors.textPrimary)),
-                            Text(
-                              profile?.email ?? l10n.fieldEmailHint,
-                              style: AppTextStyles.caption.copyWith(color: colors.textTertiary),
-                            ),
+                            if ((profile?.email ?? '').isNotEmpty)
+                              Text(
+                                profile!.email!,
+                                style: AppTextStyles.caption.copyWith(color: colors.textTertiary),
+                              ),
                           ],
                         ),
                       ),
@@ -187,18 +188,6 @@ class SettingsView extends StatelessWidget {
                       trailingText: '${state.productCount}',
                       onTap: openLibrary,
                     ),
-                    AppListTile(
-                      icon: AppIcon.wallet,
-                      title: l10n.labelMaterials,
-                      trailingText: '${state.materialCount}',
-                      onTap: openLibrary,
-                    ),
-                    AppListTile(
-                      icon: AppIcon.scissors,
-                      title: l10n.settingsServiceTemplates,
-                      trailingText: '${state.serviceCount}',
-                      onTap: openLibrary,
-                    ),
                   ],
                 ),
                 const SizedBox(height: AppSpacing.section),
@@ -221,21 +210,24 @@ class SettingsView extends StatelessWidget {
                 SettingsGroup(
                   title: l10n.settingsGroupAbout,
                   children: [
-                    AppListTile(
-                      icon: AppIcon.shield,
-                      title: l10n.settingsPrivacy,
-                      onTap: () => unawaited(cubit.openPrivacy()),
-                    ),
-                    AppListTile(
-                      icon: AppIcon.file,
-                      title: l10n.settingsTerms,
-                      onTap: () => unawaited(cubit.openTerms()),
-                    ),
-                    AppListTile(
-                      icon: AppIcon.help,
-                      title: l10n.settingsSupport,
-                      onTap: () => unawaited(cubit.contactSupport()),
-                    ),
+                    if (cubit.hasPrivacyLink)
+                      AppListTile(
+                        icon: AppIcon.shield,
+                        title: l10n.settingsPrivacy,
+                        onTap: () => unawaited(cubit.openPrivacy()),
+                      ),
+                    if (cubit.hasTermsLink)
+                      AppListTile(
+                        icon: AppIcon.file,
+                        title: l10n.settingsTerms,
+                        onTap: () => unawaited(cubit.openTerms()),
+                      ),
+                    if (cubit.hasSupportLink)
+                      AppListTile(
+                        icon: AppIcon.help,
+                        title: l10n.settingsSupport,
+                        onTap: () => unawaited(cubit.contactSupport()),
+                      ),
                   ],
                 ),
                 const SizedBox(height: AppSpacing.section),

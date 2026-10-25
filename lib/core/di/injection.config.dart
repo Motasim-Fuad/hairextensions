@@ -11,6 +11,21 @@
 // ignore_for_file: no_leading_underscores_for_library_prefixes
 
 import 'package:connectivity_plus/connectivity_plus.dart' as _i895;
+import 'package:hairextensions/app/router/guards/auth_guard.dart' as _i2001;
+import 'package:hairextensions/core/contracts/account_restorer.dart' as _i2002;
+import 'package:hairextensions/core/feature_flags/api_app_config_source.dart'
+    as _i2003;
+import 'package:hairextensions/core/session/session_refresh.dart' as _i2004;
+import 'package:hairextensions/features/auth/data/services/api_account_gateway.dart'
+    as _i2005;
+import 'package:hairextensions/features/auth/domain/services/account_gateway.dart'
+    as _i2006;
+import 'package:hairextensions/features/business_setup/data/services/business_account_restorer.dart'
+    as _i2007;
+import 'package:hairextensions/features/library/data/repositories/remote_library_repository.dart'
+    as _i2008;
+import 'package:hairextensions/features/quotes/data/repositories/remote_quote_repository.dart'
+    as _i2009;
 import 'package:dio/dio.dart' as _i361;
 import 'package:flutter_secure_storage/flutter_secure_storage.dart' as _i558;
 import 'package:get_it/get_it.dart' as _i174;
@@ -103,7 +118,6 @@ import 'package:hairextensions/core/monitoring/performance/performance_tracer.da
     as _i304;
 import 'package:hairextensions/core/network/auth/session_expiry_notifier.dart'
     as _i1058;
-import 'package:hairextensions/core/network/auth/token_refresher.dart' as _i20;
 import 'package:hairextensions/core/network/client/api_client.dart' as _i1039;
 import 'package:hairextensions/core/network/client/bare_dio_factory.dart'
     as _i682;
@@ -140,12 +154,8 @@ import 'package:hairextensions/features/auth/data/datasources/remote/auth_remote
     as _i914;
 import 'package:hairextensions/features/auth/data/repositories/auth_repository_impl.dart'
     as _i865;
-import 'package:hairextensions/features/auth/data/services/token_refresher_impl.dart'
-    as _i351;
 import 'package:hairextensions/features/auth/domain/repositories/auth_repository.dart'
     as _i346;
-import 'package:hairextensions/features/auth/domain/usecases/ensure_device_session.dart'
-    as _i556;
 import 'package:hairextensions/features/business_setup/business_setup_module.dart'
     as _i496;
 import 'package:hairextensions/features/business_setup/data/datasources/local/business_profile_local_data_source.dart'
@@ -307,9 +317,11 @@ extension GetItInjectableX on _i174.GetIt {
     );
     gh.lazySingleton<_i561.QuoteRepository>(
       () => _i379.DemoQuoteRepository(gh<_i264.Clock>()),
+      registerFor: {_mock},
     );
     gh.lazySingleton<_i156.LibraryRepository>(
       () => _i95.DemoLibraryRepository(gh<_i264.Clock>()),
+      registerFor: {_mock},
     );
     gh.lazySingleton<_i253.AnalyticsService>(
       () => _i96.FirebaseAnalyticsService(gh<_i1071.FirebaseBootstrapper>()),
@@ -320,7 +332,7 @@ extension GetItInjectableX on _i174.GetIt {
     gh.lazySingleton<_i682.BareDioFactory>(
       () => _i682.BareDioFactory(gh<_i731.AppConfig>()),
     );
-    gh.lazySingleton<_i970.FeatureFlagSource>(
+    gh.lazySingleton<_i979.FirebaseRemoteConfigSource>(
       () => _i979.FirebaseRemoteConfigSource(gh<_i1071.FirebaseBootstrapper>()),
     );
     gh.lazySingleton<_i160.CrashReporter>(
@@ -504,12 +516,6 @@ extension GetItInjectableX on _i174.GetIt {
         gh<_i253.AnalyticsService>(),
       ),
     );
-    gh.lazySingleton<_i20.TokenRefresher>(
-      () => _i351.TokenRefresherImpl(
-        gh<_i548.AuthRemoteDataSource>(),
-        gh<_i264.Clock>(),
-      ),
-    );
     gh.factory<_i352.OnboardingCubit>(
       () => _i352.OnboardingCubit(gh<_i541.AppSession>()),
     );
@@ -523,12 +529,10 @@ extension GetItInjectableX on _i174.GetIt {
       () => _i865.AuthRepositoryImpl(
         gh<_i548.AuthRemoteDataSource>(),
         gh<_i580.SecureTokenStore>(),
-        gh<_i1004.DeviceIdProvider>(),
-        gh<_i264.Clock>(),
+        gh<_i541.AppSession>(),
+        gh<_i2002.AccountRestorer>(),
+        gh<_i2004.SessionRefresh>(),
       ),
-    );
-    gh.lazySingleton<_i556.EnsureDeviceSession>(
-      () => _i556.EnsureDeviceSession(gh<_i346.AuthRepository>()),
     );
     gh.lazySingleton<_i100.BusinessProfileRepository>(
       () => _i278.BusinessProfileRepositoryImpl(
@@ -538,6 +542,7 @@ extension GetItInjectableX on _i174.GetIt {
         gh<_i1069.SyncQueue>(),
         gh<_i541.AppSession>(),
         gh<_i264.Clock>(),
+        gh<_i974.BusinessProfileRemoteDataSource>(),
       ),
     );
     gh.lazySingleton<_i866.GetBusinessProfile>(
@@ -556,7 +561,6 @@ extension GetItInjectableX on _i174.GetIt {
       () => _i87.DioFactory(
         gh<_i731.AppConfig>(),
         gh<_i580.SecureTokenStore>(),
-        gh<_i20.TokenRefresher>(),
         gh<_i1058.SessionExpiryNotifier>(),
         gh<_i304.PerformanceTracer>(),
       ),
@@ -570,8 +574,11 @@ extension GetItInjectableX on _i174.GetIt {
     );
     gh.lazySingleton<_i92.DeviceSessionStarter>(
       () => _i92.DeviceSessionStarter(
-        gh<_i556.EnsureDeviceSession>(),
+        gh<_i346.AuthRepository>(),
         gh<_i1058.SessionExpiryNotifier>(),
+        gh<_i541.AppSession>(),
+        gh<_i580.SecureTokenStore>(),
+        gh<_i2002.AccountRestorer>(),
       ),
       dispose: (i) => i.dispose(),
     );
@@ -662,6 +669,7 @@ extension GetItInjectableX on _i174.GetIt {
       () => _i912.RouteGuardChain(
         gh<_i45.AppGateGuard>(),
         gh<_i142.OnboardingGuard>(),
+        gh<_i2001.AuthGuard>(),
         gh<_i513.SetupGuard>(),
         gh<_i168.FeatureFlagGuard>(),
         gh<_i582.SubscriptionGuard>(),
@@ -675,6 +683,7 @@ extension GetItInjectableX on _i174.GetIt {
         gh<_i79.SubscriptionService>(),
         gh<_i6.ScreenViewTracker>(),
         gh<_i771.LinkLauncher>(),
+        gh<_i2004.SessionRefresh>(),
       ),
     );
     gh.lazySingleton<_i496.BusinessSetupModule>(
@@ -682,6 +691,43 @@ extension GetItInjectableX on _i174.GetIt {
         gh<_i82.SyncHandlerRegistry>(),
         gh<_i145.BusinessProfileSyncHandler>(),
       ),
+    );
+    gh.lazySingleton<_i2004.SessionRefresh>(() => _i2004.SessionRefresh());
+    gh.lazySingleton<_i2001.AuthGuard>(
+      () => _i2001.AuthGuard(gh<_i541.AppSession>()),
+    );
+    gh.lazySingleton<_i2002.AccountRestorer>(
+      () => _i2007.BusinessAccountRestorer(
+        gh<_i974.BusinessProfileRemoteDataSource>(),
+        gh<_i689.BusinessProfileLocalDataSource>(),
+        gh<_i541.AppSession>(),
+        gh<_i1069.SyncQueue>(),
+      ),
+    );
+    gh.lazySingleton<_i2006.AccountGateway>(
+      () => _i2005.ApiAccountGateway(gh<_i346.AuthRepository>()),
+    );
+    gh.lazySingleton<_i970.FeatureFlagSource>(
+      () => _i2003.ApiAppConfigSource(
+        gh<_i979.FirebaseRemoteConfigSource>(),
+        gh<_i1039.ApiClient>(),
+        gh<_i731.AppConfig>(),
+      ),
+    );
+    gh.lazySingleton<_i156.LibraryRepository>(
+      () => _i2008.RemoteLibraryRepository(
+        gh<_i1039.ApiClient>(),
+        gh<_i580.SecureTokenStore>(),
+      ),
+      registerFor: {_dev, _prod},
+    );
+    gh.lazySingleton<_i561.QuoteRepository>(
+      () => _i2009.RemoteQuoteRepository(
+        gh<_i1039.ApiClient>(),
+        gh<_i580.SecureTokenStore>(),
+        gh<_i764.BusinessProfileReader>(),
+      ),
+      registerFor: {_dev, _prod},
     );
     return this;
   }

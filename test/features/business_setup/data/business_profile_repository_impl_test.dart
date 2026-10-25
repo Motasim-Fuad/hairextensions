@@ -1,4 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:hairextensions/core/network/api_response/api_response.dart';
 import 'package:hairextensions/core/constants/storage_keys.dart';
 import 'package:hairextensions/core/database/app_database.dart';
 import 'package:hairextensions/core/database/tables/business_profile_table.dart';
@@ -17,6 +18,7 @@ import 'package:mocktail/mocktail.dart';
 import '../../../fixtures/business_profile_fixture.dart';
 import '../../../helpers/fakes/fake_logo_file_store.dart';
 import '../../../helpers/fakes/in_memory_key_value_store.dart';
+import '../../../helpers/mocks/mock_business_profile_remote_data_source.dart';
 import '../../../helpers/mocks/mock_image_source_picker.dart';
 import '../../../helpers/test_database.dart';
 
@@ -29,7 +31,10 @@ void main() {
   late InMemoryKeyValueStore store;
   late FakeLogoFileStore logos;
   late MockImageSourcePicker picker;
+  late MockBusinessProfileRemoteDataSource remote;
   late BusinessProfileRepositoryImpl repository;
+
+  setUpAll(() => registerFallbackValue(<String, Object?>{}));
 
   setUp(() {
     database = TestDatabase.create();
@@ -38,7 +43,17 @@ void main() {
     store = InMemoryKeyValueStore();
     logos = FakeLogoFileStore();
     picker = MockImageSourcePicker();
-    repository = BusinessProfileRepositoryImpl(local, logos, picker, queue, KeyValueAppSession(store), Clock());
+    remote = MockBusinessProfileRemoteDataSource();
+    when(() => remote.push(any())).thenAnswer((_) async => ApiResponse<void>.success(null));
+    repository = BusinessProfileRepositoryImpl(
+      local,
+      logos,
+      picker,
+      queue,
+      KeyValueAppSession(store),
+      Clock(),
+      remote,
+    );
   });
 
   tearDown(() async {
@@ -72,9 +87,29 @@ void main() {
     expect(store.peekBool(StorageKeys.setupCompleted), isNull);
   });
 
-  test('completing setup sets the router flag', () async {
+  test('completing setup creates the business on the server and sets the router flag', () async {
     await repository.saveProfile(profile, completeSetup: true);
+
+    verify(() => remote.push(any())).called(1);
     expect(store.peekBool(StorageKeys.setupCompleted), isTrue);
+  });
+
+  test('a rejected business keeps setup open and reports the failure', () async {
+    when(() => remote.push(any())).thenAnswer(
+      (_) async => ApiResponse<void>.failure(statusCode: 422, message: 'The request is not valid.'),
+    );
+
+    final result = await repository.saveProfile(profile, completeSetup: true);
+
+    expect(result.isLeft(), isTrue);
+    expect(store.peekBool(StorageKeys.setupCompleted), isNull);
+    expect((await repository.getProfile()).getOrElse((_) => null), profile);
+  });
+
+  test('editing an existing profile does not call the server directly', () async {
+    await repository.saveProfile(profile, completeSetup: false);
+
+    verifyNever(() => remote.push(any()));
   });
 
   test('replacing the logo deletes the previous file', () async {

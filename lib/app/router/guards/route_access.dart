@@ -7,6 +7,7 @@ abstract final class RouteAccess {
   static const List<String> authPaths = [
     AppRoutes.loginPath,
     AppRoutes.registerPath,
+    AppRoutes.verifyOtpPath,
     AppRoutes.forgotPasswordPath,
   ];
 

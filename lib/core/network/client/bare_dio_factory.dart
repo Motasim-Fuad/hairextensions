@@ -6,9 +6,9 @@ import 'package:hairextensions/core/network/interceptors/logging_interceptor.dar
 import 'package:hairextensions/core/network/security/certificate_pinning.dart';
 import 'package:injectable/injectable.dart';
 
-/// Client without auth or refresh interceptors, used for device registration
-/// and the refresh call itself. Kept apart from DioFactory because the token
-/// refresher depends on this client, and DioFactory depends on the refresher.
+/// Client without auth or session interceptors, used for the public auth
+/// calls (register, verify-otp, login) where a 401 means wrong credentials,
+/// not an expired session.
 @lazySingleton
 class BareDioFactory {
   BareDioFactory(this._config);

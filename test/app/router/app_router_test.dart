@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hairextensions/app/router/app_router.dart';
 import 'package:hairextensions/app/router/guards/app_gate_guard.dart';
+import 'package:hairextensions/app/router/guards/auth_guard.dart';
 import 'package:hairextensions/app/router/guards/feature_flag_guard.dart';
 import 'package:hairextensions/app/router/guards/onboarding_guard.dart';
 import 'package:hairextensions/app/router/guards/route_guard_chain.dart';
@@ -19,11 +20,13 @@ import 'package:hairextensions/core/feature_flags/feature_flag_scope.dart';
 import 'package:hairextensions/core/feature_flags/feature_key.dart';
 import 'package:hairextensions/core/links/link_launcher.dart';
 import 'package:hairextensions/core/localization/app_locales.dart';
+import 'package:hairextensions/core/session/session_refresh.dart';
 import 'package:hairextensions/core/shared_entities/business_profile.dart';
 import 'package:hairextensions/core/theme/app_theme.dart';
 import 'package:hairextensions/core/theme/tokens/app_motion.dart';
 import 'package:hairextensions/core/utils/clock.dart';
 import 'package:hairextensions/features/auth/domain/repositories/auth_repository.dart';
+import 'package:hairextensions/features/auth/domain/services/account_gateway.dart';
 import 'package:hairextensions/features/library/data/repositories/demo_library_repository.dart';
 import 'package:hairextensions/features/library/presentation/bloc/library/library_cubit.dart';
 import 'package:hairextensions/features/onboarding/presentation/bloc/onboarding_cubit.dart';
@@ -37,6 +40,7 @@ import 'package:mocktail/mocktail.dart';
 
 import '../../helpers/fakes/fake_app_session.dart';
 import '../../helpers/fakes/fake_subscription_service.dart';
+import '../../helpers/fakes/session_account_gateway.dart';
 import '../../helpers/mocks/mock_analytics_service.dart';
 import '../../helpers/mocks/mock_app_gate_service.dart';
 import '../../helpers/mocks/mock_connectivity_cubit.dart';
@@ -104,6 +108,7 @@ void main() {
       RouteGuardChain(
         AppGateGuard(gate),
         OnboardingGuard(session),
+        AuthGuard(session),
         SetupGuard(session),
         FeatureFlagGuard(features),
         SubscriptionGuard(subscription, features),
@@ -113,9 +118,11 @@ void main() {
       subscription,
       ScreenViewTracker(analytics),
       _MockLinkLauncher(),
+      SessionRefresh(),
     );
 
     getIt
+      ..registerSingleton<AccountGateway>(SessionAccountGateway(session))
       ..registerFactory<OnboardingCubit>(
             () => OnboardingCubit(session),
       )
@@ -273,7 +280,8 @@ void main() {
         (tester) async {
       session
         ..onboardingSeen = true
-        ..setupCompleted = true;
+        ..setupCompleted = true
+        ..signedIn = true;
 
       await pumpRouter(tester);
 
@@ -293,7 +301,8 @@ void main() {
         (tester) async {
       session
         ..onboardingSeen = true
-        ..setupCompleted = true;
+        ..setupCompleted = true
+        ..signedIn = true;
 
       await pumpRouter(
         tester,

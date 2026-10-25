@@ -10,6 +10,9 @@ abstract final class AppRoutes {
   static const String register = 'register';
   static const String registerPath = '/register';
 
+  static const String verifyOtp = 'verify-otp';
+  static const String verifyOtpPath = '/verify-otp';
+
   static const String forgotPassword = 'forgot-password';
   static const String forgotPasswordPath = '/forgot-password';
 

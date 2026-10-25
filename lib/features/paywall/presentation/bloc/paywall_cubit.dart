@@ -9,8 +9,8 @@ import 'package:hairextensions/features/paywall/presentation/bloc/paywall_failur
 import 'package:hairextensions/features/paywall/presentation/bloc/paywall_state.dart';
 import 'package:injectable/injectable.dart';
 
-/// Store billing is not wired yet: the mock environment unlocks Pro locally so
-/// the full flow can be demoed; other environments report an inline error.
+/// Store billing is not wired yet: mock and non-production builds unlock Pro
+/// locally so the full flow can be tried; production reports an inline error.
 @injectable
 class PaywallCubit extends Cubit<PaywallState> {
   PaywallCubit(this._subscription, this._config, this._links) : super(const PaywallState());
@@ -19,7 +19,7 @@ class PaywallCubit extends Cubit<PaywallState> {
   final AppConfig _config;
   final LinkLauncher _links;
 
-  bool get _canMockPurchase => _config.environment == AppEnvironment.mock;
+  bool get _canMockPurchase => _config.environment == AppEnvironment.mock || !_config.isProduction;
 
   void selectPlan(PaywallPlan plan) => emit(state.copyWith(plan: plan));
 
