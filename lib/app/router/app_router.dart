@@ -61,45 +61,48 @@ class AppRouter {
   final ScreenViewTracker _screenViews;
   final LinkLauncher _launcher;
   final SessionRefresh _sessionRefresh;
-  final GlobalKey<NavigatorState> _rootKey = GlobalKey<NavigatorState>(debugLabel: 'root');
+  final GlobalKey<NavigatorState> _rootKey = GlobalKey<NavigatorState>(
+    debugLabel: 'root',
+  );
 
   late final GoRouter config = GoRouter(
     navigatorKey: _rootKey,
     initialLocation: AppRoutes.homePath,
-    refreshListenable: Listenable.merge([_gate, _flags, _subscription, _sessionRefresh]),
+    refreshListenable: Listenable.merge([
+      _gate,
+      _flags,
+      _subscription,
+      _sessionRefresh,
+    ]),
     redirect: (_, state) => _guards.redirect(state.uri),
     observers: [AnalyticsRouteObserver(_screenViews)],
-    errorBuilder: (context, _) => AppErrorScreen(onGoHome: () => context.go(AppRoutes.homePath)),
+    errorBuilder: (context, _) =>
+        AppErrorScreen(onGoHome: () => context.go(AppRoutes.homePath)),
     routes: [
       GoRoute(path: '/', redirect: (_, _) => AppRoutes.homePath),
       GoRoute(
         path: AppRoutes.onboardingPath,
         name: AppRoutes.onboarding,
-        pageBuilder: (_, state) => FadeSlidePage<void>(
-          state: state,
-          child: const OnboardingPage(),
-        ),
+        pageBuilder: (_, state) =>
+            FadeSlidePage<void>(state: state, child: const OnboardingPage()),
       ),
       GoRoute(
         path: AppRoutes.loginPath,
         name: AppRoutes.login,
-        pageBuilder: (_, state) => FadeSlidePage<void>(
-          state: state,
-          child: const LoginPage(),
-        ),
+        pageBuilder: (_, state) =>
+            FadeSlidePage<void>(state: state, child: const LoginPage()),
       ),
       GoRoute(
         path: AppRoutes.registerPath,
         name: AppRoutes.register,
-        pageBuilder: (_, state) => FadeSlidePage<void>(
-          state: state,
-          child: const RegisterPage(),
-        ),
+        pageBuilder: (_, state) =>
+            FadeSlidePage<void>(state: state, child: const RegisterPage()),
       ),
       GoRoute(
         path: AppRoutes.verifyOtpPath,
         name: AppRoutes.verifyOtp,
-        redirect: (_, state) => state.extra is OtpArguments ? null : AppRoutes.registerPath,
+        redirect: (_, state) =>
+            state.extra is OtpArguments ? null : AppRoutes.registerPath,
         pageBuilder: (_, state) => FadeSlidePage<void>(
           state: state,
           child: OtpPage(arguments: state.extra! as OtpArguments),
@@ -116,18 +119,31 @@ class AppRouter {
       GoRoute(
         path: AppRoutes.paywallPath,
         name: AppRoutes.paywall,
-        pageBuilder: (_, state) => SlideUpPage<void>(
-          state: state,
-          child: const PaywallPage(),
-        ),
+        pageBuilder: (_, state) =>
+            SlideUpPage<void>(state: state, child: const PaywallPage()),
       ),
       ...BusinessSetupRoutes.firstLaunch,
       StatefulShellRoute.indexedStack(
-        builder: (_, _, shell) => AppShell(navigationShell: shell, screenViews: _screenViews),
+        builder: (_, _, shell) =>
+            AppShell(navigationShell: shell, screenViews: _screenViews),
         branches: [
-          _branch(_tabRoute(ShellTab.home, AppRoutes.homePath, const HomePage())),
-          _branch(_tabRoute(ShellTab.quotes, AppRoutes.quotesPath, const QuoteHistoryPage())),
-          _branch(_tabRoute(ShellTab.library, AppRoutes.libraryPath, const LibraryPage())),
+          _branch(
+            _tabRoute(ShellTab.home, AppRoutes.homePath, const HomePage()),
+          ),
+          _branch(
+            _tabRoute(
+              ShellTab.quotes,
+              AppRoutes.quotesPath,
+              const QuoteHistoryPage(),
+            ),
+          ),
+          _branch(
+            _tabRoute(
+              ShellTab.library,
+              AppRoutes.libraryPath,
+              const LibraryPage(),
+            ),
+          ),
           _branch(
             GoRoute(
               path: AppRoutes.settingsPath,
@@ -144,14 +160,18 @@ class AppRouter {
         parentNavigatorKey: _rootKey,
         pageBuilder: (_, state) => SlideUpPage<void>(
           state: state,
-          child: QuoteBuilderPage(template: state.extra is Quote ? state.extra! as Quote : null),
+          child: QuoteBuilderPage(
+            template: state.extra is Quote ? state.extra! as Quote : null,
+            editing: state.uri.queryParameters['edit'] == 'true',
+          ),
         ),
         routes: [
           GoRoute(
             path: AppRoutes.quoteReviewPath,
             name: AppRoutes.quoteReview,
             parentNavigatorKey: _rootKey,
-            redirect: (_, state) => state.extra is Quote ? null : AppRoutes.newQuotePath,
+            redirect: (_, state) =>
+                state.extra is Quote ? null : AppRoutes.newQuotePath,
             pageBuilder: (_, state) => FadeSlidePage<void>(
               state: state,
               child: QuoteReviewPage(quote: state.extra! as Quote),
@@ -165,7 +185,9 @@ class AppRouter {
         parentNavigatorKey: _rootKey,
         pageBuilder: (_, state) => FadeSlidePage<void>(
           state: state,
-          child: QuoteDetailPage(quoteId: state.pathParameters[AppRoutes.idParam]!),
+          child: QuoteDetailPage(
+            quoteId: state.pathParameters[AppRoutes.idParam]!,
+          ),
         ),
         routes: [
           GoRoute(
@@ -174,7 +196,9 @@ class AppRouter {
             parentNavigatorKey: _rootKey,
             pageBuilder: (_, state) => FadeSlidePage<void>(
               state: state,
-              child: QuotePreviewPage(quoteId: state.pathParameters[AppRoutes.idParam]!),
+              child: QuotePreviewPage(
+                quoteId: state.pathParameters[AppRoutes.idParam]!,
+              ),
             ),
           ),
         ],
@@ -185,7 +209,9 @@ class AppRouter {
         parentNavigatorKey: _rootKey,
         pageBuilder: (_, state) => SlideUpPage<void>(
           state: state,
-          child: ProductFormPage(product: state.extra is Product ? state.extra! as Product : null),
+          child: ProductFormPage(
+            product: state.extra is Product ? state.extra! as Product : null,
+          ),
         ),
       ),
       GoRoute(
@@ -210,7 +236,10 @@ class AppRouter {
   /// Each tab navigator gets its own observer; an observer can only be
   /// attached to one navigator.
   StatefulShellBranch _branch(GoRoute route) {
-    return StatefulShellBranch(observers: [AnalyticsRouteObserver(_screenViews)], routes: [route]);
+    return StatefulShellBranch(
+      observers: [AnalyticsRouteObserver(_screenViews)],
+      routes: [route],
+    );
   }
 
   GoRoute _tabRoute(ShellTab tab, String path, Widget page) {

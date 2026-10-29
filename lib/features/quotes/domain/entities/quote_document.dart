@@ -18,11 +18,13 @@ class QuoteDocument extends Equatable {
     required this.summary,
     required this.footer,
     this.noteLabel,
+    this.apiPath,
     this.note,
     this.callToAction,
   });
 
   final String fileName;
+  final String? apiPath;
   final String businessName;
   final String businessContact;
   final String title;

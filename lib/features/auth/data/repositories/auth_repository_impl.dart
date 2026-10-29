@@ -1,3 +1,4 @@
+import 'package:hairextensions/core/network/client/api_client.dart';
 import 'package:fpdart/fpdart.dart';
 import 'package:hairextensions/core/contracts/account_restorer.dart';
 import 'package:hairextensions/core/errors/failures/failure.dart';
@@ -13,10 +14,18 @@ import 'package:injectable/injectable.dart';
 
 @LazySingleton(as: AuthRepository)
 class AuthRepositoryImpl implements AuthRepository {
-  AuthRepositoryImpl(this._remote, this._tokens, this._session, this._restorer, this._refresh);
+  AuthRepositoryImpl(
+    this._remote,
+    this._tokens,
+    this._session,
+    this._restorer,
+    this._refresh, [
+    this._client,
+  ]);
 
   static const String _source = 'AuthRepository';
 
+  final ApiClient? _client;
   final AuthRemoteDataSource _remote;
   final SecureTokenStore _tokens;
   final AppSession _session;
@@ -25,14 +34,25 @@ class AuthRepositoryImpl implements AuthRepository {
   final Map<String, String> _pendingOtps = {};
 
   @override
-  Future<Either<Failure, Unit>> register({required String name, required String email, required String password}) async {
-    final response = await _remote.register(name: name, email: email, password: password);
+  Future<Either<Failure, Unit>> register({
+    required String name,
+    required String email,
+    required String password,
+  }) async {
+    final response = await _remote.register(
+      name: name,
+      email: email,
+      password: password,
+    );
     _rememberOtp(email, response.data?.otp);
     return _result(response);
   }
 
   @override
-  Future<Either<Failure, Unit>> verifyOtp({required String email, required String otp}) async {
+  Future<Either<Failure, Unit>> verifyOtp({
+    required String email,
+    required String otp,
+  }) async {
     final response = await _remote.verifyOtp(email: email, otp: otp);
     return _result(response);
   }
@@ -45,7 +65,10 @@ class AuthRepositoryImpl implements AuthRepository {
   }
 
   @override
-  Future<Either<Failure, Unit>> login({required String email, required String password}) async {
+  Future<Either<Failure, Unit>> login({
+    required String email,
+    required String password,
+  }) async {
     final response = await _remote.login(email: email, password: password);
     final model = response.data;
     if (!response.isSuccess || model == null) {
@@ -53,6 +76,17 @@ class AuthRepositoryImpl implements AuthRepository {
       return Left(ApiFailureMapper.toFailure(response));
     }
     await _tokens.save(model.toEntity());
+    final client = _client;
+    if (client != null) {
+      final me = await client.get<Object?>(
+        '/v1/auth/me',
+        parser: (json) => json,
+      );
+      if (!me.isSuccess) {
+        await _tokens.clear();
+        return Left(ApiFailureMapper.toFailure(me));
+      }
+    }
     final restored = await _restorer.restore();
     if (restored.isLeft()) {
       // Without knowing whether a business exists the app cannot route
@@ -66,6 +100,9 @@ class AuthRepositoryImpl implements AuthRepository {
 
   @override
   Future<void> endSession() async {
+    if (_tokens.cachedAccessToken != null) {
+      await _client?.post<void>('/v1/auth/logout', parser: (_) {});
+    }
     await _tokens.clear();
     await _restorer.clearLocal();
     await _session.markSignedOut();
@@ -73,7 +110,8 @@ class AuthRepositoryImpl implements AuthRepository {
   }
 
   @override
-  String? takePendingOtp(String email) => _pendingOtps.remove(email.trim().toLowerCase());
+  String? takePendingOtp(String email) =>
+      _pendingOtps.remove(email.trim().toLowerCase());
 
   void _rememberOtp(String email, String? otp) {
     if (otp != null && otp.isNotEmpty) {

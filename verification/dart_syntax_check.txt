@@ -1,0 +1,1 @@
+Parsed 630 Dart files. Syntax diagnostics: 0.

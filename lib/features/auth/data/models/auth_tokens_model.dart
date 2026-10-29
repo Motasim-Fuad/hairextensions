@@ -3,13 +3,20 @@ import 'package:hairextensions/core/shared_entities/auth_tokens.dart';
 /// Matches the API `TokenResponse`:
 /// {access_token, token_type, expires_at, user: {id, email, name, ...}}.
 class AuthTokensModel {
-  const AuthTokensModel({required this.accessToken, this.expiresAt, this.userName, this.userEmail});
+  const AuthTokensModel({
+    required this.accessToken,
+    this.refreshToken,
+    this.expiresAt,
+    this.userName,
+    this.userEmail,
+  });
 
   factory AuthTokensModel.fromJson(Object? json) {
     final map = json! as Map<String, dynamic>;
     final user = map[_userKey];
     return AuthTokensModel(
       accessToken: map[_accessTokenKey] as String,
+      refreshToken: map['refresh_token'] as String?,
       expiresAt: DateTime.tryParse('${map[_expiresAtKey] ?? ''}'),
       userName: user is Map ? user[_nameKey] as String? : null,
       userEmail: user is Map ? user[_emailKey] as String? : null,
@@ -23,9 +30,14 @@ class AuthTokensModel {
   static const String _emailKey = 'email';
 
   final String accessToken;
+  final String? refreshToken;
   final DateTime? expiresAt;
   final String? userName;
   final String? userEmail;
 
-  AuthTokens toEntity() => AuthTokens(accessToken: accessToken, expiresAt: expiresAt?.toUtc());
+  AuthTokens toEntity() => AuthTokens(
+    accessToken: accessToken,
+    refreshToken: refreshToken,
+    expiresAt: expiresAt?.toUtc(),
+  );
 }

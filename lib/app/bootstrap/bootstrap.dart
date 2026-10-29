@@ -1,3 +1,5 @@
+import 'package:hairextensions/core/storage/secure_token_store.dart';
+import 'package:hairextensions/core/session/app_session.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -39,6 +41,10 @@ Future<void> bootstrap() async {
   Bloc.observer = getIt<AppBlocObserver>();
 
   await getIt<KeyValueStore>().warmUp();
+  final tokens = await getIt<SecureTokenStore>().read();
+  if (tokens == null && getIt<AppSession>().signedIn) {
+    await getIt<AppSession>().markSignedOut();
+  }
 
   AppLogger.debug(
     _source,

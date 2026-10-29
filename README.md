@@ -1,7 +1,6 @@
 # Price to Profit
 
-Offline-first pricing, quoting and invoicing for hair extension professionals. Flutter, BLoC, feature-first clean
-architecture. Everything works without a network; the backend is optional until cloud sync is switched on.
+Flutter pricing, quoting and invoicing app connected to the supplied Price to Profit API. Start with [START_HERE.md](START_HERE.md) for replacement and run instructions, [the API audit](docs/API_INTEGRATION_AUDIT.md) for endpoint coverage and verification limits, and [the app flow](docs/APP_FLOW.md) for navigation.
 
 ## Requirements
 
@@ -13,7 +12,7 @@ architecture. Everything works without a network; the backend is optional until 
 
 ```bash
 make setup      # pub get, localizations, DI code generation
-make run-mock   # runs against in-memory mock datasources, no backend needed
+make run-dev    # runs against the supplied live API
 ```
 
 `make check` runs the same gate as CI: format, analyze (infos are fatal) and tests.

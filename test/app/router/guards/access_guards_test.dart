@@ -11,9 +11,17 @@ import '../../../helpers/test_feature_flags.dart';
 void main() {
   group('FeatureFlagGuard', () {
     test('a disabled feature route is unreachable', () {
-      final guard = FeatureFlagGuard(TestFeatureFlags.build(overrides: {FeatureKey.library: false}));
-      expect(guard.redirect(Uri.parse(AppRoutes.libraryPath)), AppRoutes.homePath);
-      expect(guard.redirect(Uri.parse('${AppRoutes.libraryPath}/products')), AppRoutes.homePath);
+      final guard = FeatureFlagGuard(
+        TestFeatureFlags.build(overrides: {FeatureKey.library: false}),
+      );
+      expect(
+        guard.redirect(Uri.parse(AppRoutes.libraryPath)),
+        AppRoutes.homePath,
+      );
+      expect(
+        guard.redirect(Uri.parse('${AppRoutes.libraryPath}/products')),
+        AppRoutes.homePath,
+      );
       expect(guard.redirect(Uri.parse(AppRoutes.quotesPath)), isNull);
     });
 
@@ -24,34 +32,42 @@ void main() {
     });
 
     test('prefix matching does not catch similarly named paths', () {
-      final guard = FeatureFlagGuard(TestFeatureFlags.build(overrides: {FeatureKey.library: false}));
-      expect(guard.redirect(Uri.parse('${AppRoutes.libraryPath}-archive')), isNull);
+      final guard = FeatureFlagGuard(
+        TestFeatureFlags.build(overrides: {FeatureKey.library: false}),
+      );
+      expect(
+        guard.redirect(Uri.parse('${AppRoutes.libraryPath}-archive')),
+        isNull,
+      );
     });
   });
 
   group('SubscriptionGuard', () {
-    test('free users are sent from pro routes to the paywall', () {
-      final guard = SubscriptionGuard(FakeSubscriptionService(), TestFeatureFlags.build());
-      expect(guard.redirect(Uri.parse(AppRoutes.newQuotePath)), AppRoutes.paywallPath);
+    test('free users can create quotes without an automatic paywall', () {
+      final guard = SubscriptionGuard(
+        FakeSubscriptionService(),
+        TestFeatureFlags.build(),
+      );
+      expect(guard.redirect(Uri.parse(AppRoutes.newQuotePath)), isNull);
       expect(guard.redirect(Uri.parse(AppRoutes.quotesPath)), isNull);
     });
 
-    test('an expired plan keeps history but not creation', () {
+    test('an expired plan does not interrupt navigation', () {
       final guard = SubscriptionGuard(
         FakeSubscriptionService(SubscriptionStatus.expired),
         TestFeatureFlags.build(),
       );
       expect(guard.redirect(Uri.parse(AppRoutes.quotesPath)), isNull);
-      expect(guard.redirect(Uri.parse(AppRoutes.newQuotePath)), AppRoutes.paywallPath);
+      expect(guard.redirect(Uri.parse(AppRoutes.newQuotePath)), isNull);
     });
 
-    test('pro users skip the paywall', () {
+    test('pro users can open subscription management', () {
       final guard = SubscriptionGuard(
         FakeSubscriptionService(SubscriptionStatus.active),
         TestFeatureFlags.build(),
       );
       expect(guard.redirect(Uri.parse(AppRoutes.newQuotePath)), isNull);
-      expect(guard.redirect(Uri.parse(AppRoutes.paywallPath)), AppRoutes.homePath);
+      expect(guard.redirect(Uri.parse(AppRoutes.paywallPath)), isNull);
     });
 
     test('switching subscriptions off remotely makes everything free', () {

@@ -62,19 +62,38 @@ class _HomeContent extends StatelessWidget {
         hour: state.now.hour,
         onSearch: () => context.goNamed(AppRoutes.quotes),
       ),
+      if (state.loadError != null)
+        Column(
+          children: [
+            Text(state.loadError!, textAlign: TextAlign.center),
+            TextButton(
+              onPressed: context.read<HomeCubit>().retryDashboard,
+              child: const Text('Retry'),
+            ),
+          ],
+        ),
       if (summary != null) ...[
         HomeHeroCard(summary: summary, currency: currency),
         Row(
           spacing: AppSpacing.md,
           children: [
             Expanded(
-              child: HomeStatTile(label: l10n.homeStatQuotes, value: '${summary.quoteCount}'),
+              child: HomeStatTile(
+                label: l10n.homeStatQuotes,
+                value: '${summary.quoteCount}',
+              ),
             ),
             Expanded(
-              child: HomeStatTile(label: l10n.homeStatInvoices, value: '${summary.invoiceCount}'),
+              child: HomeStatTile(
+                label: l10n.homeStatInvoices,
+                value: '${summary.invoiceCount}',
+              ),
             ),
             Expanded(
-              child: HomeStatTile(label: l10n.homeStatDeposits, value: MoneyFormatter.compact(summary.depositsMinor)),
+              child: HomeStatTile(
+                label: 'Collected',
+                value: MoneyFormatter.compact(summary.depositsMinor),
+              ),
             ),
           ],
         ),
@@ -93,14 +112,17 @@ class _HomeContent extends StatelessWidget {
             child: HomeQuickAction(
               icon: AppIcon.package,
               label: l10n.homeAddProduct,
-              onTap: () => unawaited(context.pushNamed<void>(AppRoutes.productForm)),
+              onTap: () =>
+                  unawaited(context.pushNamed<void>(AppRoutes.productForm)),
             ),
           ),
           Expanded(
             child: HomeQuickAction(
               icon: AppIcon.copy,
               label: l10n.homeDuplicateLast,
-              onTap: latest == null ? () {} : () => unawaited(context.startNewQuote(template: latest)),
+              onTap: latest == null
+                  ? () {}
+                  : () => unawaited(context.startNewQuote(template: latest)),
             ),
           ),
         ],
@@ -111,21 +133,35 @@ class _HomeContent extends StatelessWidget {
         onAction: () => context.goNamed(AppRoutes.quotes),
       ),
       if (state.recent.isEmpty)
-        EmptyState(icon: AppIcon.file, title: l10n.quotesEmptyTitle, message: l10n.quotesEmptyMessage)
+        EmptyState(
+          icon: AppIcon.file,
+          title: l10n.quotesEmptyTitle,
+          message: l10n.quotesEmptyMessage,
+        )
       else
         Column(
           spacing: AppSpacing.md,
           children: [
             for (final quote in state.recent)
-              QuoteListTile(quote: quote, now: state.now, onTap: () => context.openQuote(quote.id)),
+              QuoteListTile(
+                quote: quote,
+                now: state.now,
+                onTap: () => context.openQuote(quote.id),
+              ),
           ],
         ),
     ];
     return ListView.separated(
-      padding: const EdgeInsets.fromLTRB(AppSpacing.xl, AppSpacing.md, AppSpacing.xl, AppSpacing.xxl),
+      padding: const EdgeInsets.fromLTRB(
+        AppSpacing.xl,
+        AppSpacing.md,
+        AppSpacing.xl,
+        AppSpacing.xxl,
+      ),
       itemCount: sections.length,
       separatorBuilder: (_, _) => const SizedBox(height: AppSpacing.section),
-      itemBuilder: (_, index) => StaggeredEntrance(index: index, child: sections[index]),
+      itemBuilder: (_, index) =>
+          StaggeredEntrance(index: index, child: sections[index]),
     );
   }
 }

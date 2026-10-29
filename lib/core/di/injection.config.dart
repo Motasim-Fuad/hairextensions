@@ -294,7 +294,7 @@ extension GetItInjectableX on _i174.GetIt {
     );
     gh.lazySingleton<_i771.LinkLauncher>(() => _i221.UrlLinkLauncher());
     gh.lazySingleton<_i562.QuoteDocumentSharer>(
-      () => _i154.PdfQuoteDocumentSharer(),
+      () => _i154.PdfQuoteDocumentSharer(gh<_i361.Dio>()),
     );
     gh.lazySingleton<_i711.DatabasePathResolver>(
       () => _i711.DatabasePathResolver(gh<_i779.DatabaseFactory>()),
@@ -495,6 +495,7 @@ extension GetItInjectableX on _i174.GetIt {
         gh<_i79.SubscriptionService>(),
         gh<_i731.AppConfig>(),
         gh<_i771.LinkLauncher>(),
+        gh<_i519.AppGateService>(),
       ),
     );
     gh.factory<_i916.QuotePreviewCubit>(
@@ -532,6 +533,7 @@ extension GetItInjectableX on _i174.GetIt {
         gh<_i541.AppSession>(),
         gh<_i2002.AccountRestorer>(),
         gh<_i2004.SessionRefresh>(),
+        gh<_i1039.ApiClient>(),
       ),
     );
     gh.lazySingleton<_i100.BusinessProfileRepository>(

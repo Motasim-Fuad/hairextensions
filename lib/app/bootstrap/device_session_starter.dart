@@ -15,7 +15,13 @@ import 'package:injectable/injectable.dart';
 /// The class keeps its original name so the bootstrap wiring does not change.
 @lazySingleton
 class DeviceSessionStarter {
-  DeviceSessionStarter(this._auth, this._expiry, this._session, this._tokens, this._restorer);
+  DeviceSessionStarter(
+    this._auth,
+    this._expiry,
+    this._session,
+    this._tokens,
+    this._restorer,
+  );
 
   static const String _source = 'SessionWatcher';
 
@@ -27,13 +33,20 @@ class DeviceSessionStarter {
   StreamSubscription<void>? _subscription;
 
   Future<void> start() async {
-    _subscription ??= _expiry.onExpired.listen((_) => unawaited(_auth.endSession()));
+    _subscription ??= _expiry.onExpired.listen(
+      (_) => unawaited(_auth.endSession()),
+    );
     if (!_session.signedIn) {
       return;
     }
     final tokens = await _tokens.read();
-    if (tokens == null || tokens.isExpired(DateTime.now().toUtc())) {
-      AppLogger.warning(_source, 'stored token missing or expired, signing out');
+    if (tokens == null ||
+        (tokens.refreshToken == null &&
+            tokens.isExpired(DateTime.now().toUtc()))) {
+      AppLogger.warning(
+        _source,
+        'stored token missing or expired, signing out',
+      );
       await _auth.endSession();
       return;
     }

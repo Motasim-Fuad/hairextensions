@@ -1,3 +1,5 @@
+import 'package:hairextensions/core/di/injection.dart';
+import 'package:hairextensions/features/auth/domain/repositories/auth_repository.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
@@ -17,10 +19,12 @@ class BusinessSetupView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BlocListener<BusinessSetupBloc, BusinessSetupState>(
-      listenWhen: (previous, current) => previous.status != current.status && current.status.isDone,
-      listener: (context, state) {
+      listenWhen: (previous, current) =>
+          previous.status != current.status && current.status.isDone,
+      listener: (context, state) async {
         if (state.status == BusinessSetupStatus.completed) {
-          context.goNamed(AppRoutes.setupComplete);
+          await getIt<AuthRepository>().endSession();
+          if (context.mounted) context.goNamed(AppRoutes.login);
         } else {
           context.pop();
         }

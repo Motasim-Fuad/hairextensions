@@ -36,30 +36,47 @@ class RemoteLibraryRepository implements LibraryRepository {
   Future<void>? _loading;
 
   @override
-  Stream<List<Product>> watchProducts() => _watch((items) => [
-    for (final item in items)
-      if (item.kind == LibraryItemDto.hair) LibraryItemMapper.toProduct(item),
-  ]);
+  Stream<List<Product>> watchProducts() => _watch(
+    (items) => [
+      for (final item in items)
+        if (item.kind == LibraryItemDto.hair) LibraryItemMapper.toProduct(item),
+    ],
+  );
 
   @override
-  Stream<List<MaterialItem>> watchMaterials() => _watch((items) => [
-    for (final item in items)
-      if (item.kind == LibraryItemDto.material) LibraryItemMapper.toMaterial(item),
-  ]);
+  Stream<List<MaterialItem>> watchMaterials() => _watch(
+    (items) => [
+      for (final item in items)
+        if (item.kind == LibraryItemDto.material)
+          LibraryItemMapper.toMaterial(item),
+    ],
+  );
 
   @override
-  Stream<List<ServiceTemplate>> watchServices() => _watch((items) => [
-    for (final item in items)
-      if (item.kind == LibraryItemDto.labour || item.kind == LibraryItemDto.service) LibraryItemMapper.toService(item),
-  ]);
+  Stream<List<ServiceTemplate>> watchServices() => _watch(
+    (items) => [
+      for (final item in items)
+        if (item.kind == LibraryItemDto.labour ||
+            item.kind == LibraryItemDto.service)
+          LibraryItemMapper.toService(item),
+    ],
+  );
 
   @override
   Future<Either<Failure, Product>> saveProduct(Product product) async {
     final id = int.tryParse(product.id);
     final body = LibraryItemMapper.productToApi(product);
     final ApiResponse<LibraryItemDto> response = id != null && _exists(id)
-        ? await _client.patch('$_path/$id', body: body, parser: LibraryItemDto.fromJson)
-        : await _client.post(_path, body: body, parser: LibraryItemDto.fromJson);
+        ? await _client.patch(
+            '$_path/$id',
+            body: body,
+            parser: LibraryItemDto.fromJson,
+          )
+        : await _client.post(
+            _path,
+            body: body,
+            parser: LibraryItemDto.fromJson,
+          );
     final saved = response.data;
     if (!response.isSuccess || saved == null) {
       return Left(ApiFailureMapper.toFailure(response));
@@ -75,7 +92,10 @@ class RemoteLibraryRepository implements LibraryRepository {
     if (numeric == null) {
       return const Right(unit);
     }
-    final response = await _client.delete<void>('$_path/$numeric', parser: (_) {});
+    final response = await _client.delete<void>(
+      '$_path/$numeric',
+      parser: (_) {},
+    );
     if (!response.isSuccess && !response.isNotFound) {
       return Left(ApiFailureMapper.toFailure(response));
     }
@@ -84,9 +104,13 @@ class RemoteLibraryRepository implements LibraryRepository {
     return const Right(unit);
   }
 
+  Future<void> reload() => _refresh();
+
   bool _exists(int id) => _items?.any((item) => item.id == id) ?? false;
 
-  Stream<List<T>> _watch<T>(List<T> Function(List<LibraryItemDto> items) select) async* {
+  Stream<List<T>> _watch<T>(
+    List<T> Function(List<LibraryItemDto> items) select,
+  ) async* {
     _resetForNewAccount();
     if (_items == null) {
       unawaited(_refresh());
@@ -105,7 +129,8 @@ class RemoteLibraryRepository implements LibraryRepository {
     }
   }
 
-  Future<void> _refresh() => _loading ??= _load().whenComplete(() => _loading = null);
+  Future<void> _refresh() =>
+      _loading ??= _load().whenComplete(() => _loading = null);
 
   Future<void> _load() async {
     final loaded = <LibraryItemDto>[];
@@ -138,7 +163,10 @@ class _Page {
   factory _Page.fromJson(Object? json) {
     final map = json! as Map<String, dynamic>;
     return _Page(
-      items: [for (final item in map['items'] as List<dynamic>) LibraryItemDto.fromJson(item)],
+      items: [
+        for (final item in map['items'] as List<dynamic>)
+          LibraryItemDto.fromJson(item),
+      ],
       total: (map['total'] as num).toInt(),
     );
   }

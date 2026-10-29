@@ -1,0 +1,62 @@
+Method,Path,Scope,Original ZIP,Updated integration / screen,Live test
+GET,/health/live,Hosting health probe,Outside mobile scope,Verified by diagnostic script; not called on every screen,Passed
+GET,/health/ready,Hosting health probe,Outside mobile scope,Verified by diagnostic script; not called on every screen,Passed
+GET,/v1/app-config,Mobile app,Existing,"Launch gates; Terms, Privacy and support URLs",Passed
+POST,/v1/auth/register,Mobile app,Existing,Auth / session / Settings account actions,Passed
+POST,/v1/auth/verify-otp,Mobile app,Existing,Auth / session / Settings account actions,Passed
+POST,/v1/auth/resend-otp,Mobile app,Existing,Auth / session / Settings account actions,Not executed
+POST,/v1/auth/login,Mobile app,Existing,Auth / session / Settings account actions,Passed
+POST,/v1/auth/refresh,Mobile app,Missing,Auth / session / Settings account actions,Passed
+GET,/v1/auth/me,Mobile app,Missing,Auth / session / Settings account actions,Passed
+DELETE,/v1/auth/me,Mobile app,Missing,Auth / session / Settings account actions,Passed
+POST,/v1/auth/logout,Mobile app,Missing,Auth / session / Settings account actions,Passed
+POST,/v1/businesses,Mobile app,Existing,"Setup, profile/defaults and pricing/invoice settings",Passed
+GET,/v1/business,Mobile app,Existing,"Setup, profile/defaults and pricing/invoice settings",Passed
+PATCH,/v1/business,Mobile app,Partial UI/action coverage,"Setup, profile/defaults and pricing/invoice settings",Passed
+PUT,/v1/business/logo,Mobile app,Missing,Business setup/settings logo; authenticated image display,Passed
+GET,/v1/business/logo,Mobile app,Missing,Business setup/settings logo; authenticated image display,Passed
+DELETE,/v1/business/logo,Mobile app,Missing,Business setup/settings logo; authenticated image display,Passed
+GET,/v1/library,Mobile app,Existing,Library; all-item manager supports hair/labour/service/material/fee,Passed
+POST,/v1/library,Mobile app,Partial UI/action coverage,Library; all-item manager supports hair/labour/service/material/fee,Passed
+GET,/v1/library/{item_id},Mobile app,Missing,Library; all-item manager supports hair/labour/service/material/fee,Passed
+PATCH,/v1/library/{item_id},Mobile app,Partial UI/action coverage,Library; all-item manager supports hair/labour/service/material/fee,Passed
+DELETE,/v1/library/{item_id},Mobile app,Partial UI/action coverage,Library; all-item manager supports hair/labour/service/material/fee,Passed
+POST,/v1/quotes/preview,Mobile app,Missing,Debounced builder pricing and mandatory price check before review,Passed
+GET,/v1/quotes,Mobile app,Existing,Quote builder/review/history/detail actions,Passed
+POST,/v1/quotes,Mobile app,Existing,Quote builder/review/history/detail actions,Passed
+GET,/v1/quotes/{quote_id},Mobile app,Existing,Quote builder/review/history/detail actions,Passed
+PATCH,/v1/quotes/{quote_id},Mobile app,Partial UI/action coverage,Quote builder/review/history/detail actions,Passed
+DELETE,/v1/quotes/{quote_id},Mobile app,Existing,Quote builder/review/history/detail actions,Passed
+PATCH,/v1/quotes/{quote_id}/status,Mobile app,Partial UI/action coverage,Quote detail lifecycle actions; share status,Passed
+POST,/v1/quotes/{quote_id}/duplicate,Mobile app,Missing,Quote detail → Duplicate,Passed
+POST,/v1/quotes/{quote_id}/invoice,Mobile app,Existing,Quote detail → Convert to invoice,Passed
+GET,/v1/invoices,Mobile app,Existing,History/detail; delete; unpaid/deposit-paid/paid actions,Passed
+GET,/v1/invoices/{invoice_id},Mobile app,Existing,History/detail; delete; unpaid/deposit-paid/paid actions,Passed
+DELETE,/v1/invoices/{invoice_id},Mobile app,Existing,History/detail; delete; unpaid/deposit-paid/paid actions,Not executed
+PATCH,/v1/invoices/{invoice_id}/status,Mobile app,Partial UI/action coverage,History/detail; delete; unpaid/deposit-paid/paid actions,Passed
+GET,/v1/quotes/{quote_id}/pdf,Mobile app,Missing,Server PDF preview/share,Passed
+GET,/v1/quotes/{quote_id}/cost-sheet/pdf,Mobile app,Missing,Internal cost sheet preview/share (source quote ID),Passed
+GET,/v1/invoices/{invoice_id}/pdf,Mobile app,Missing,Server PDF preview/share,Passed
+GET,/v1/dashboard,Mobile app,Missing,Home calendar-month totals with retry,Passed
+GET,/v1/admin/overview,Admin dashboard (separate),Outside mobile scope,Separate owner/admin dashboard; intentionally not called by stylist app,Not executed
+GET,/v1/admin/business,Admin dashboard (separate),Outside mobile scope,Separate owner/admin dashboard; intentionally not called by stylist app,Not executed
+GET,/v1/admin/businesses,Admin dashboard (separate),Outside mobile scope,Separate owner/admin dashboard; intentionally not called by stylist app,Not executed
+GET,/v1/admin/defaults,Admin dashboard (separate),Outside mobile scope,Separate owner/admin dashboard; intentionally not called by stylist app,Not executed
+PUT,/v1/admin/defaults,Admin dashboard (separate),Outside mobile scope,Separate owner/admin dashboard; intentionally not called by stylist app,Not executed
+POST,/v1/admin/defaults/apply,Admin dashboard (separate),Outside mobile scope,Separate owner/admin dashboard; intentionally not called by stylist app,Not executed
+GET,/v1/admin/settings,Admin dashboard (separate),Outside mobile scope,Separate owner/admin dashboard; intentionally not called by stylist app,Not executed
+PATCH,/v1/admin/settings,Admin dashboard (separate),Outside mobile scope,Separate owner/admin dashboard; intentionally not called by stylist app,Not executed
+GET,/v1/admin/activity,Admin dashboard (separate),Outside mobile scope,Separate owner/admin dashboard; intentionally not called by stylist app,Not executed
+GET,/v1/admin/platform/overview,Admin dashboard (separate),Outside mobile scope,Separate owner/admin dashboard; intentionally not called by stylist app,Not executed
+GET,/v1/admin/platform/subscribers,Admin dashboard (separate),Outside mobile scope,Separate owner/admin dashboard; intentionally not called by stylist app,Not executed
+GET,/v1/admin/platform/subscribers/{subscriber_id},Admin dashboard (separate),Outside mobile scope,Separate owner/admin dashboard; intentionally not called by stylist app,Not executed
+POST,/v1/admin/platform/subscribers/{subscriber_id}/grant-free,Admin dashboard (separate),Outside mobile scope,Separate owner/admin dashboard; intentionally not called by stylist app,Not executed
+POST,/v1/admin/platform/subscribers/{subscriber_id}/toggle-status,Admin dashboard (separate),Outside mobile scope,Separate owner/admin dashboard; intentionally not called by stylist app,Not executed
+POST,/v1/admin/platform/subscribers/{subscriber_id}/note,Admin dashboard (separate),Outside mobile scope,Separate owner/admin dashboard; intentionally not called by stylist app,Not executed
+GET,/v1/admin/platform/activity,Admin dashboard (separate),Outside mobile scope,Separate owner/admin dashboard; intentionally not called by stylist app,Not executed
+GET,/v1/admin/platform/plans,Admin dashboard (separate),Outside mobile scope,Separate owner/admin dashboard; intentionally not called by stylist app,Not executed
+PUT,/v1/admin/platform/plans,Admin dashboard (separate),Outside mobile scope,Separate owner/admin dashboard; intentionally not called by stylist app,Not executed
+GET,/v1/admin/platform/defaults,Admin dashboard (separate),Outside mobile scope,Separate owner/admin dashboard; intentionally not called by stylist app,Not executed
+PUT,/v1/admin/platform/defaults,Admin dashboard (separate),Outside mobile scope,Separate owner/admin dashboard; intentionally not called by stylist app,Not executed
+GET,/v1/admin/platform/settings,Admin dashboard (separate),Outside mobile scope,Separate owner/admin dashboard; intentionally not called by stylist app,Not executed
+PATCH,/v1/admin/platform/settings,Admin dashboard (separate),Outside mobile scope,Separate owner/admin dashboard; intentionally not called by stylist app,Not executed

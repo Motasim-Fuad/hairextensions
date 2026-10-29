@@ -1,3 +1,6 @@
+import 'dart:async';
+
+import 'package:hairextensions/features/quotes/domain/repositories/quote_server_operations.dart';
 import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:hairextensions/core/contracts/business_profile_reader.dart';
@@ -21,17 +24,57 @@ part 'quote_builder_state.dart';
 @injectable
 class QuoteBuilderCubit extends Cubit<QuoteBuilderState> {
   QuoteBuilderCubit(this._repository, this._profiles, this._ids, Clock clock)
-    : super(QuoteBuilderState(status: ViewStatus.loading, id: _ids.next(), createdAt: clock.now()));
+    : super(
+        QuoteBuilderState(
+          status: ViewStatus.loading,
+          id: _ids.next(),
+          createdAt: clock.now(),
+        ),
+      );
 
   final QuoteRepository _repository;
   final BusinessProfileReader _profiles;
   final IdGenerator _ids;
 
+  Timer? _previewTimer;
+  int _previewGeneration = 0;
+  bool _applyingPreview = false;
+
+  @override
+  void onChange(Change<QuoteBuilderState> change) {
+    super.onChange(change);
+    if (_applyingPreview || _repository is! QuoteServerOperations) return;
+    final generation = ++_previewGeneration;
+    _previewTimer?.cancel();
+    final next = change.nextState;
+    if (next.status != ViewStatus.ready || !next.hasLines) return;
+    _previewTimer = Timer(const Duration(milliseconds: 350), () async {
+      final result = await (_repository as QuoteServerOperations).preview(
+        next.quote,
+      );
+      if (isClosed || generation != _previewGeneration) return;
+      result.match((_) {}, (quote) {
+        _applyingPreview = true;
+        emit(state.copyWith(serverQuote: quote));
+        _applyingPreview = false;
+      });
+    });
+  }
+
+  @override
+  Future<void> close() {
+    _previewTimer?.cancel();
+    _previewGeneration++;
+    return super.close();
+  }
+
   /// [template] pre-fills client and lines (duplicate); prices stay frozen.
-  Future<void> start({Quote? template}) async {
+  Future<void> start({Quote? template, bool editing = false}) async {
     final profile = await _profiles.read();
-    final quoteNumber = (await _repository.nextNumber(QuoteStatus.quote)).getOrElse((_) => '');
-    final invoiceNumber = (await _repository.nextNumber(QuoteStatus.invoice)).getOrElse((_) => '');
+    final quoteNumber = (await _repository.nextNumber(QuoteStatus.quote))
+        .getOrElse((_) => '');
+    final invoiceNumber = (await _repository.nextNumber(QuoteStatus.invoice))
+        .getOrElse((_) => '');
     if (isClosed) {
       return;
     }
@@ -39,12 +82,15 @@ class QuoteBuilderCubit extends Cubit<QuoteBuilderState> {
     emit(
       state.copyWith(
         status: ViewStatus.ready,
-        quoteNumber: quoteNumber,
+        id: editing ? template?.id : null,
+        quoteNumber: editing ? template?.number : quoteNumber,
         invoiceNumber: invoiceNumber,
         currency: template?.currencyCode ?? profile?.currencyCode,
         vatRatePercent: template?.vatRatePercent ?? profile?.taxRatePercent,
         validityDays: profile?.quoteValidityDays,
-        depositType: template == null ? profile?.depositType : DepositType.fixed,
+        depositType: template == null
+            ? profile?.depositType
+            : DepositType.fixed,
         depositPercent: profile?.depositPercent,
         depositFixedMinor: template?.depositMinor ?? profile?.depositFixedMinor,
         note: template?.note ?? profile?.defaultNote,
@@ -69,27 +115,52 @@ class QuoteBuilderCubit extends Cubit<QuoteBuilderState> {
 
   void setClientPhone(String value) => emit(state.copyWith(clientPhone: value));
 
-  void setAppointment(DateTime value) => emit(state.copyWith(appointment: value));
+  void setAppointment(DateTime value) =>
+      emit(state.copyWith(appointment: value));
 
-  void addLine(QuoteLine line) => emit(state.copyWith(lines: [...state.lines, line]));
+  void addLine(QuoteLine line) =>
+      emit(state.copyWith(lines: [...state.lines, line]));
 
-  void removeLine(String id) => emit(state.copyWith(lines: state.lines.where((line) => line.id != id).toList()));
+  void removeLine(String id) => emit(
+    state.copyWith(lines: state.lines.where((line) => line.id != id).toList()),
+  );
 
   void setShipping(int minor) => emit(state.copyWith(shippingMinor: minor));
 
-  void setShippingTaxable({required bool value}) => emit(state.copyWith(shippingTaxable: value));
+  void setShippingTaxable({required bool value}) =>
+      emit(state.copyWith(shippingTaxable: value));
 
   void setVatRate(double value) => emit(state.copyWith(vatRatePercent: value));
 
-  void setDepositType(DepositType type) => emit(state.copyWith(depositType: type));
+  void setDepositType(DepositType type) =>
+      emit(state.copyWith(depositType: type));
 
-  void setDepositPercent(double value) => emit(state.copyWith(depositPercent: value));
+  void setDepositPercent(double value) =>
+      emit(state.copyWith(depositPercent: value));
 
-  void setDepositFixed(int minor) => emit(state.copyWith(depositFixedMinor: minor));
+  void setDepositFixed(int minor) =>
+      emit(state.copyWith(depositFixedMinor: minor));
 
   void setNote(String value) => emit(state.copyWith(note: value));
 
   void setPaymentLink(String value) => emit(state.copyWith(paymentLink: value));
+
+  Future<Quote?> pricedDraft() async {
+    final draft = submit();
+    if (draft == null) return null;
+    final repository = _repository;
+    if (repository is! QuoteServerOperations) return draft;
+    final generation = _previewGeneration;
+    final result = await (repository as QuoteServerOperations).preview(draft);
+    if (generation != _previewGeneration)
+      throw StateError('Quote changed. Please review again.');
+    return result.match(
+      (failure) => throw StateError(
+        failure.message ?? 'Unable to calculate server prices.',
+      ),
+      (quote) => quote,
+    );
+  }
 
   /// Returns the draft when it is complete; otherwise flags the missing
   /// fields inline and returns null.

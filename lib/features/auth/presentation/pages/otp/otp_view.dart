@@ -28,7 +28,9 @@ class OtpView extends StatefulWidget {
 }
 
 class _OtpViewState extends State<OtpView> {
-  late final TextEditingController _code = TextEditingController(text: widget.suggestedCode);
+  late final TextEditingController _code = TextEditingController(
+    text: widget.suggestedCode,
+  );
 
   @override
   void dispose() {
@@ -47,10 +49,11 @@ class _OtpViewState extends State<OtpView> {
     final cubit = context.read<OtpCubit>();
     return BlocConsumer<OtpCubit, OtpState>(
       listenWhen: (previous, current) =>
-          previous.status != AuthSubmitStatus.success && current.status == AuthSubmitStatus.success,
-      // The account is signed in by now; the paywall comes next, then the
-      // guards send the stylist on to business setup or home.
-      listener: (context, _) => context.goNamed(AppRoutes.paywall),
+          previous.status != AuthSubmitStatus.success &&
+          current.status == AuthSubmitStatus.success,
+      // The verified signup session is used for protected business setup.
+      // Completing setup ends that session and opens Login.
+      listener: (context, _) => context.goNamed(AppRoutes.home),
       builder: (context, state) {
         return AuthScaffold(
           title: l10n.authOtpTitle,
@@ -73,16 +76,21 @@ class _OtpViewState extends State<OtpView> {
               label: l10n.authActionVerify,
               onPressed: _submit,
               isLoading: state.isSubmitting,
-              errorText: state.status == AuthSubmitStatus.failure ? l10n.authErrorOtpInvalid : null,
+              errorText: state.status == AuthSubmitStatus.failure
+                  ? l10n.authErrorOtpInvalid
+                  : null,
             ),
             Center(
               child: AppLinkButton(
                 label: switch (state.resendStatus) {
                   OtpResendStatus.sent => l10n.authOtpResent,
                   OtpResendStatus.failure => l10n.authOtpResendFailed,
-                  OtpResendStatus.idle || OtpResendStatus.sending => l10n.authActionResendOtp,
+                  OtpResendStatus.idle ||
+                  OtpResendStatus.sending => l10n.authActionResendOtp,
                 },
-                onPressed: state.isResending ? null : () => unawaited(cubit.resend()),
+                onPressed: state.isResending
+                    ? null
+                    : () => unawaited(cubit.resend()),
               ),
             ),
             AuthSwitchRow(

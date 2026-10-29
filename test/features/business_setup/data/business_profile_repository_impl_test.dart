@@ -2,12 +2,10 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:hairextensions/core/network/api_response/api_response.dart';
 import 'package:hairextensions/core/constants/storage_keys.dart';
 import 'package:hairextensions/core/database/app_database.dart';
-import 'package:hairextensions/core/database/tables/business_profile_table.dart';
 import 'package:hairextensions/core/errors/failures/failure.dart';
 import 'package:hairextensions/core/media/image_permission_denied_exception.dart';
 import 'package:hairextensions/core/session/key_value_app_session.dart';
 import 'package:hairextensions/core/sync/sqflite_sync_queue.dart';
-import 'package:hairextensions/core/sync/sync_operation_type.dart';
 import 'package:hairextensions/core/utils/clock.dart';
 import 'package:hairextensions/features/business_setup/data/datasources/local/business_profile_local_data_source_impl.dart';
 import 'package:hairextensions/features/business_setup/data/repositories/business_profile_repository_impl.dart';
@@ -44,7 +42,8 @@ void main() {
     logos = FakeLogoFileStore();
     picker = MockImageSourcePicker();
     remote = MockBusinessProfileRemoteDataSource();
-    when(() => remote.push(any())).thenAnswer((_) async => ApiResponse<void>.success(null));
+    when(() => remote.push(any()))
+        .thenAnswer((_) async => ApiResponse<void>.success(null));
     repository = BusinessProfileRepositoryImpl(
       local,
       logos,
@@ -75,15 +74,13 @@ void main() {
     expect((await repository.getProfile()).getOrElse((_) => profile), isNull);
   });
 
-  test('saves locally, reads back the same profile and queues one sync row', () async {
+  test('signup drafts stay local until setup is complete', () async {
     await repository.saveProfile(profile, completeSetup: false);
     await repository.saveProfile(profile, completeSetup: false);
 
     expect((await repository.getProfile()).getOrElse((_) => null), profile);
     final due = await queue.due(limit: 10);
-    expect(due, hasLength(1));
-    expect(due.single.entity, BusinessProfileTable.name);
-    expect(due.single.type, SyncOperationType.create);
+    expect(due, isEmpty);
     expect(store.peekBool(StorageKeys.setupCompleted), isNull);
   });
 
@@ -94,27 +91,37 @@ void main() {
     expect(store.peekBool(StorageKeys.setupCompleted), isTrue);
   });
 
-  test('a rejected business keeps setup open and reports the failure', () async {
-    when(() => remote.push(any())).thenAnswer(
-      (_) async => ApiResponse<void>.failure(statusCode: 422, message: 'The request is not valid.'),
-    );
+  test(
+    'a rejected business keeps setup open and reports the failure',
+    () async {
+      when(() => remote.push(any())).thenAnswer(
+        (_) async => ApiResponse<void>.failure(
+          statusCode: 422,
+          message: 'The request is not valid.',
+        ),
+      );
 
-    final result = await repository.saveProfile(profile, completeSetup: true);
+      final result = await repository.saveProfile(profile, completeSetup: true);
 
-    expect(result.isLeft(), isTrue);
-    expect(store.peekBool(StorageKeys.setupCompleted), isNull);
-    expect((await repository.getProfile()).getOrElse((_) => null), profile);
-  });
+      expect(result.isLeft(), isTrue);
+      expect(store.peekBool(StorageKeys.setupCompleted), isNull);
+      expect((await repository.getProfile()).getOrElse((_) => null), profile);
+    },
+  );
 
-  test('editing an existing profile does not call the server directly', () async {
+  test('editing a completed profile calls the server directly', () async {
+    await KeyValueAppSession(store).markSetupCompleted();
     await repository.saveProfile(profile, completeSetup: false);
-
-    verifyNever(() => remote.push(any()));
+    verify(() => remote.push(any())).called(1);
   });
 
   test('replacing the logo deletes the previous file', () async {
-    final withLogo = BusinessProfileDraft.fromProfile(profile).withLogo('/old.png').toProfile(base: profile);
-    final replaced = BusinessProfileDraft.fromProfile(profile).withLogo('/new.png').toProfile(base: profile);
+    final withLogo = BusinessProfileDraft.fromProfile(profile)
+        .withLogo('/old.png')
+        .toProfile(base: profile);
+    final replaced = BusinessProfileDraft.fromProfile(profile)
+        .withLogo('/new.png')
+        .toProfile(base: profile);
 
     await repository.saveProfile(withLogo, completeSetup: false);
     await repository.saveProfile(replaced, completeSetup: false);
@@ -135,7 +142,10 @@ void main() {
   group('pickLogo', () {
     test('copies the picked image into app storage', () async {
       await pick(() async => 'picked.png');
-      expect((await repository.pickLogo()).getOrElse((_) => null), '/stored/picked.png');
+      expect(
+        (await repository.pickLogo()).getOrElse((_) => null),
+        '/stored/picked.png',
+      );
     });
 
     test('cancel is a success with no path', () async {
@@ -145,11 +155,14 @@ void main() {
       expect(result.getOrElse((_) => 'x'), isNull);
     });
 
-    test('blocked photo access maps to a permanent permission failure', () async {
-      await pick(() async => throw const ImagePermissionDeniedException());
-      final failure = (await repository.pickLogo()).getLeft().toNullable();
-      expect(failure, isA<PermissionDeniedFailure>());
-      expect((failure! as PermissionDeniedFailure).isPermanent, isTrue);
-    });
+    test(
+      'blocked photo access maps to a permanent permission failure',
+      () async {
+        await pick(() async => throw const ImagePermissionDeniedException());
+        final failure = (await repository.pickLogo()).getLeft().toNullable();
+        expect(failure, isA<PermissionDeniedFailure>());
+        expect((failure! as PermissionDeniedFailure).isPermanent, isTrue);
+      },
+    );
   });
 }

@@ -7,10 +7,12 @@ final class HomeState extends Equatable {
     this.profile,
     this.quotes = const [],
     this.summary,
+    this.loadError,
   });
 
   static const int recentCount = 3;
 
+  final String? loadError;
   final ViewStatus status;
   final DateTime now;
   final BusinessProfile? profile;
@@ -21,18 +23,29 @@ final class HomeState extends Equatable {
 
   Quote? get latest => quotes.firstOrNull;
 
-  String get currency => profile?.currencyCode ?? quotes.firstOrNull?.currencyCode ?? QuoteFallbacks.currency;
+  String get currency =>
+      profile?.currencyCode ??
+      quotes.firstOrNull?.currencyCode ??
+      QuoteFallbacks.currency;
 
-  HomeState copyWith({ViewStatus? status, BusinessProfile? profile, List<Quote>? quotes, QuoteMonthSummary? summary}) {
+  HomeState copyWith({
+    ViewStatus? status,
+    BusinessProfile? profile,
+    List<Quote>? quotes,
+    QuoteMonthSummary? summary,
+    String? loadError,
+    bool clearError = false,
+  }) {
     return HomeState(
       status: status ?? this.status,
       now: now,
       profile: profile ?? this.profile,
       quotes: quotes ?? this.quotes,
       summary: summary ?? this.summary,
+      loadError: clearError ? null : loadError ?? this.loadError,
     );
   }
 
   @override
-  List<Object?> get props => [status, now, profile, quotes, summary];
+  List<Object?> get props => [status, now, profile, quotes, summary, loadError];
 }

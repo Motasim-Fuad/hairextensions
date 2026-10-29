@@ -1,11 +1,15 @@
 import 'package:equatable/equatable.dart';
 
-/// The API issues a single bearer token at login. There is no refresh token:
-/// when the token expires the stylist signs in again.
+/// Session pair returned by login and refresh. Refresh tokens stay in secure storage.
 class AuthTokens extends Equatable {
-  const AuthTokens({required this.accessToken, this.expiresAt});
+  const AuthTokens({
+    required this.accessToken,
+    this.refreshToken,
+    this.expiresAt,
+  });
 
   final String accessToken;
+  final String? refreshToken;
   final DateTime? expiresAt;
 
   bool isExpired(DateTime now) {
@@ -14,5 +18,5 @@ class AuthTokens extends Equatable {
   }
 
   @override
-  List<Object?> get props => [accessToken, expiresAt];
+  List<Object?> get props => [accessToken, refreshToken, expiresAt];
 }

@@ -20,6 +20,7 @@ import 'package:hairextensions/core/feature_flags/feature_flag_scope.dart';
 import 'package:hairextensions/core/feature_flags/feature_key.dart';
 import 'package:hairextensions/core/links/link_launcher.dart';
 import 'package:hairextensions/core/localization/app_locales.dart';
+import 'package:hairextensions/core/routing/app_routes.dart';
 import 'package:hairextensions/core/session/session_refresh.dart';
 import 'package:hairextensions/core/shared_entities/business_profile.dart';
 import 'package:hairextensions/core/theme/app_theme.dart';
@@ -61,6 +62,7 @@ class _EmptyProfileReader implements BusinessProfileReader {
 void main() {
   final l10n = lookupAppLocalizations(AppLocales.fallback);
 
+  late AppRouter router;
   late MockAppGateService gate;
   late MockAnalyticsService analytics;
   late MockConnectivityCubit connectivity;
@@ -74,29 +76,25 @@ void main() {
 
     analytics = MockAnalyticsService();
 
-    when(() => analytics.logScreenView(any()))
-        .thenAnswer((_) async {});
+    when(() => analytics.logScreenView(any())).thenAnswer((_) async {});
 
     connectivity = MockConnectivityCubit();
 
-    when(() => connectivity.state)
-        .thenReturn(ConnectivityStatus.online);
+    when(() => connectivity.state).thenReturn(ConnectivityStatus.online);
 
-    when(() => connectivity.stream)
-        .thenAnswer((_) => const Stream.empty());
+    when(() => connectivity.stream).thenAnswer((_) => const Stream.empty());
 
     session = FakeAppSession();
 
     mockAuthRepository = _MockAuthRepository();
 
-    when(() => mockAuthRepository.endSession())
-        .thenAnswer((_) async {});
+    when(() => mockAuthRepository.endSession()).thenAnswer((_) async {});
   });
 
   Future<void> pumpRouter(
-      WidgetTester tester, {
-        Map<FeatureKey, bool> flags = const {},
-      }) async {
+    WidgetTester tester, {
+    Map<FeatureKey, bool> flags = const {},
+  }) async {
     final features = TestFeatureFlags.build(overrides: flags);
     final subscription = FakeSubscriptionService();
     final clock = Clock();
@@ -104,7 +102,7 @@ void main() {
     final library = DemoLibraryRepository(clock);
     final profiles = _EmptyProfileReader();
 
-    final router = AppRouter(
+    router = AppRouter(
       RouteGuardChain(
         AppGateGuard(gate),
         OnboardingGuard(session),
@@ -123,27 +121,21 @@ void main() {
 
     getIt
       ..registerSingleton<AccountGateway>(SessionAccountGateway(session))
-      ..registerFactory<OnboardingCubit>(
-            () => OnboardingCubit(session),
-      )
+      ..registerFactory<OnboardingCubit>(() => OnboardingCubit(session))
       ..registerFactory<PaywallCubit>(
-            () => PaywallCubit(
+        () => PaywallCubit(
           subscription,
           AppConfig.fromEnvironment(),
           _MockLinkLauncher(),
         ),
       )
-      ..registerFactory<HomeCubit>(
-            () => HomeCubit(quotes, profiles, clock),
-      )
+      ..registerFactory<HomeCubit>(() => HomeCubit(quotes, profiles, clock))
       ..registerFactory<QuoteHistoryCubit>(
-            () => QuoteHistoryCubit(quotes, clock),
+        () => QuoteHistoryCubit(quotes, clock),
       )
-      ..registerFactory<LibraryCubit>(
-            () => LibraryCubit(library),
-      )
+      ..registerFactory<LibraryCubit>(() => LibraryCubit(library))
       ..registerFactory<SettingsCubit>(
-            () => SettingsCubit(
+        () => SettingsCubit(
           profiles,
           library,
           subscription,
@@ -183,101 +175,90 @@ void main() {
     await tester.pumpAndSettle();
   }
 
+  testWidgets('first launch opens onboarding, and skipping opens log in', (
+    tester,
+  ) async {
+    await pumpRouter(tester);
+
+    await tester.pump(AppMotion.splashHold);
+    await tester.pumpAndSettle();
+
+    expect(find.text(l10n.onboardingCostTitle), findsOneWidget);
+
+    await tester.tap(find.text(l10n.actionSkip));
+    await tester.pumpAndSettle();
+
+    expect(session.onboardingSeen, isTrue);
+    expect(find.text(l10n.authLoginTitle), findsOneWidget);
+  });
+
   testWidgets(
-    'first launch opens onboarding, and skipping opens log in',
-        (tester) async {
-      await pumpRouter(tester);
-
-      await tester.pump(AppMotion.splashHold);
-      await tester.pumpAndSettle();
-
-      expect(find.text(l10n.onboardingCostTitle), findsOneWidget);
-
-      await tester.tap(find.text(l10n.actionSkip));
-      await tester.pumpAndSettle();
-
-      expect(session.onboardingSeen, isTrue);
-      expect(find.text(l10n.authLoginTitle), findsOneWidget);
-    },
-  );
-
-  testWidgets(
-    'logging in continues to the paywall',
-        (tester) async {
+    'logging in opens home for a configured account without a paywall',
+    (tester) async {
       await openLogin(tester);
 
       expect(find.text(l10n.authLoginTitle), findsOneWidget);
+      session.setupCompleted = true;
 
       final fields = find.byType(TextField);
 
-      await tester.enterText(
-        fields.at(0),
-        'amna@example.com',
-      );
+      await tester.enterText(fields.at(0), 'amna@example.com');
 
-      await tester.enterText(
-        fields.at(1),
-        'secret123',
-      );
+      await tester.enterText(fields.at(1), 'secret123');
 
       await tester.tap(find.text(l10n.authActionLogin));
 
       await tester.pump(const Duration(seconds: 1));
       await tester.pumpAndSettle();
 
-      expect(find.text(l10n.paywallTitle), findsOneWidget);
-    },
-  );
-
-  testWidgets(
-    'log in and registration link to each other',
-        (tester) async {
-      await openLogin(tester);
-
-      await tester.tap(find.text(l10n.authActionRegister));
-      await tester.pumpAndSettle();
-
-      expect(find.text(l10n.authRegisterTitle), findsOneWidget);
-
-      await tester.tap(find.text(l10n.authActionLogin));
-      await tester.pumpAndSettle();
-
-      expect(find.text(l10n.authLoginTitle), findsOneWidget);
-    },
-  );
-
-  testWidgets(
-    'forgot password opens from log in and returns',
-        (tester) async {
-      await openLogin(tester);
-
-      await tester.tap(find.text(l10n.authForgotPasswordLink));
-      await tester.pumpAndSettle();
-
-      expect(find.text(l10n.authForgotTitle), findsOneWidget);
-
-      await tester.enterText(
-        find.byType(TextField),
-        'amna@example.com',
+      expect(find.text(l10n.paywallTitle), findsNothing);
+      expect(
+        router.config.routeInformationProvider.value.uri.path,
+        AppRoutes.homePath,
       );
-
-      await tester.tap(find.text(l10n.authActionSendLink));
-
-      await tester.pump(const Duration(seconds: 1));
-      await tester.pumpAndSettle();
-
-      expect(find.text(l10n.authForgotSentTitle), findsOneWidget);
-
-      await tester.tap(find.text(l10n.authActionBackToLogin));
-      await tester.pumpAndSettle();
-
-      expect(find.text(l10n.authLoginTitle), findsOneWidget);
     },
   );
+
+  testWidgets('log in and registration link to each other', (tester) async {
+    await openLogin(tester);
+
+    await tester.tap(find.text(l10n.authActionRegister));
+    await tester.pumpAndSettle();
+
+    expect(find.text(l10n.authRegisterTitle), findsOneWidget);
+
+    await tester.tap(find.text(l10n.authActionLogin));
+    await tester.pumpAndSettle();
+
+    expect(find.text(l10n.authLoginTitle), findsOneWidget);
+  });
+
+  testWidgets('forgot password opens from log in and returns', (tester) async {
+    await openLogin(tester);
+
+    await tester.tap(find.text(l10n.authForgotPasswordLink));
+    await tester.pumpAndSettle();
+
+    expect(find.text(l10n.authForgotTitle), findsOneWidget);
+
+    await tester.enterText(find.byType(TextField), 'amna@example.com');
+
+    await tester.tap(find.text(l10n.authActionSendLink));
+
+    await tester.pump(const Duration(seconds: 1));
+    await tester.pumpAndSettle();
+
+    expect(find.text(l10n.authForgotSentTitle), findsOneWidget);
+
+    await tester.tap(find.text(l10n.authActionBackToLogin));
+    await tester.pumpAndSettle();
+
+    expect(find.text(l10n.authLoginTitle), findsOneWidget);
+  });
 
   testWidgets(
     'a finished setup opens the tab shell and keeps tabs switchable',
-        (tester) async {
+    (tester) async {
       session
         ..onboardingSeen = true
         ..setupCompleted = true
@@ -296,21 +277,15 @@ void main() {
     },
   );
 
-  testWidgets(
-    'a tab whose feature is off is hidden',
-        (tester) async {
-      session
-        ..onboardingSeen = true
-        ..setupCompleted = true
-        ..signedIn = true;
+  testWidgets('a tab whose feature is off is hidden', (tester) async {
+    session
+      ..onboardingSeen = true
+      ..setupCompleted = true
+      ..signedIn = true;
 
-      await pumpRouter(
-        tester,
-        flags: {FeatureKey.library: false},
-      );
+    await pumpRouter(tester, flags: {FeatureKey.library: false});
 
-      expect(find.text(l10n.navLibrary), findsNothing);
-      expect(find.text(l10n.navSettings), findsOneWidget);
-    },
-  );
+    expect(find.text(l10n.navLibrary), findsNothing);
+    expect(find.text(l10n.navSettings), findsOneWidget);
+  });
 }

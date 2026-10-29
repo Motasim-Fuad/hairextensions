@@ -17,6 +17,9 @@ class Quote extends Equatable {
     required this.vatRatePercent,
     required this.depositMinor,
     this.lines = const [],
+    this.sourceQuoteId,
+    this.serverStatus,
+    this.serverTotals,
     this.clientPhone,
     this.appointment,
     this.note,
@@ -25,6 +28,9 @@ class Quote extends Equatable {
   });
 
   final String id;
+  final String? sourceQuoteId;
+  final String? serverStatus;
+  final QuoteTotals? serverTotals;
   final String number;
   final QuoteStatus status;
   final String clientName;
@@ -40,9 +46,10 @@ class Quote extends Equatable {
   final String? paymentLink;
   final List<QuoteActivity> activity;
 
-  QuoteTotals get totals => QuoteTotals.of(this);
+  QuoteTotals get totals => serverTotals ?? QuoteTotals.of(this);
 
-  Iterable<QuoteLine> linesIn(LineCategory category) => lines.where((line) => line.category == category);
+  Iterable<QuoteLine> linesIn(LineCategory category) =>
+      lines.where((line) => line.category == category);
 
   Quote copyWith({
     String? id,
@@ -62,6 +69,12 @@ class Quote extends Equatable {
   }) {
     return Quote(
       id: id ?? this.id,
+      sourceQuoteId: sourceQuoteId,
+      serverStatus: serverStatus,
+      serverTotals:
+          lines == null && vatRatePercent == null && depositMinor == null
+          ? serverTotals
+          : null,
       number: number ?? this.number,
       status: status ?? this.status,
       clientName: clientName ?? this.clientName,
@@ -82,6 +95,9 @@ class Quote extends Equatable {
   @override
   List<Object?> get props => [
     id,
+    sourceQuoteId,
+    serverStatus,
+    serverTotals,
     number,
     status,
     clientName,

@@ -28,6 +28,7 @@ class SecureStorageTokenStore implements SecureTokenStore {
     }
     return _cache = AuthTokens(
       accessToken: access,
+      refreshToken: await _storage.read(key: StorageKeys.refreshToken),
       expiresAt: expiresAt == null ? null : DateTime.tryParse(expiresAt),
     );
   }
@@ -39,6 +40,10 @@ class SecureStorageTokenStore implements SecureTokenStore {
     await _storage.write(
       key: StorageKeys.accessToken,
       value: tokens.accessToken,
+    );
+    await _storage.write(
+      key: StorageKeys.refreshToken,
+      value: tokens.refreshToken,
     );
     final expiresAt = tokens.expiresAt;
     if (expiresAt == null) {

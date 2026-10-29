@@ -33,7 +33,11 @@ class DioFactory {
     CertificatePinning.apply(dio, _config);
     dio.interceptors.addAll([
       AuthInterceptor(_tokenStore),
-      SessionExpiryInterceptor(tokenStore: _tokenStore, expiryNotifier: _expiryNotifier),
+      SessionExpiryInterceptor(
+        dio: dio,
+        tokenStore: _tokenStore,
+        expiryNotifier: _expiryNotifier,
+      ),
       RetryInterceptor(dio: dio),
       PerformanceInterceptor(_tracer),
       if (kDebugMode) LoggingInterceptor(),

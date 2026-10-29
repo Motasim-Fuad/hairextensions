@@ -1,3 +1,5 @@
+import 'package:hairextensions/features/quotes/domain/repositories/quote_server_operations.dart';
+
 import 'dart:async';
 
 import 'package:equatable/equatable.dart';
@@ -16,7 +18,8 @@ part 'home_state.dart';
 
 @injectable
 class HomeCubit extends Cubit<HomeState> {
-  HomeCubit(this._quotes, this._profiles, Clock clock) : super(HomeState(status: ViewStatus.loading, now: clock.now()));
+  HomeCubit(this._quotes, this._profiles, Clock clock)
+    : super(HomeState(status: ViewStatus.loading, now: clock.now()));
 
   final QuoteRepository _quotes;
   final BusinessProfileReader _profiles;
@@ -24,15 +27,42 @@ class HomeCubit extends Cubit<HomeState> {
   StreamSubscription<BusinessProfile?>? _profileSubscription;
 
   void start() {
-    _profileSubscription = _profiles.watch().listen((profile) => emit(state.copyWith(profile: profile)));
-    _quoteSubscription = _quotes.watchAll().listen(
-      (quotes) => emit(
+    _profileSubscription = _profiles.watch().listen(
+      (profile) => emit(state.copyWith(profile: profile)),
+    );
+    _quoteSubscription = _quotes.watchAll().listen((quotes) {
+      if (isClosed) return;
+      emit(
         state.copyWith(
           status: ViewStatus.ready,
           quotes: quotes,
-          summary: QuoteMonthSummary.of(quotes, state.now),
+          summary: _quotes is QuoteServerOperations
+              ? null
+              : QuoteMonthSummary.of(quotes, state.now),
+        ),
+      );
+      unawaited(_refreshDashboard());
+    });
+  }
+
+  Future<void> retryDashboard() => _refreshDashboard();
+
+  int _dashboardGeneration = 0;
+  Future<void> _refreshDashboard() async {
+    final repository = _quotes;
+    if (repository is! QuoteServerOperations) return;
+    final generation = ++_dashboardGeneration;
+    final result = await (repository as QuoteServerOperations).dashboard(
+      state.now,
+    );
+    if (isClosed || generation != _dashboardGeneration) return;
+    result.match(
+      (_) => emit(
+        state.copyWith(
+          loadError: 'Unable to load your dashboard. Please retry.',
         ),
       ),
+      (summary) => emit(state.copyWith(summary: summary, clearError: true)),
     );
   }
 

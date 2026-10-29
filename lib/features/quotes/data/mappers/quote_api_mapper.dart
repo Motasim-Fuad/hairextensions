@@ -1,3 +1,4 @@
+import 'package:hairextensions/features/quotes/domain/entities/quote_totals.dart';
 import 'package:hairextensions/core/utils/money_codec.dart';
 import 'package:hairextensions/features/quotes/domain/entities/line_category.dart';
 import 'package:hairextensions/features/quotes/domain/entities/quote.dart';
@@ -23,6 +24,44 @@ abstract final class QuoteApiMapper {
   static const String _statusPaid = 'paid';
   static const Duration _placeholderValidity = Duration(days: 30);
 
+  static QuoteTotals totalsFromApi(Json value) => QuoteTotals(
+    subtotalMinor: MoneyCodec.toMinor(value['subtotal']),
+    taxableMinor: MoneyCodec.toMinor(value['taxable_amount']),
+    taxableLineCount: 0,
+    vatMinor: MoneyCodec.toMinor(value['tax_amount']),
+    totalMinor: MoneyCodec.toMinor(value['total']),
+    depositMinor: MoneyCodec.toMinor(value['deposit_amount']),
+    balanceMinor: MoneyCodec.toMinor(value['balance_due']),
+    costsMinor: MoneyCodec.toMinor(value['total_cost']),
+    profitMinor: MoneyCodec.toMinor(value['profit']),
+    marginPercent: MoneyCodec.toDouble(value['margin_percent']),
+    hours: MoneyCodec.toDouble(value['labour_hours']),
+    profitPerHourMinor: value['profit_per_hour'] == null
+        ? null
+        : MoneyCodec.toMinor(value['profit_per_hour']),
+  );
+
+  static Quote previewFromApi(Json value, Quote draft) => Quote(
+    id: draft.id,
+    number: draft.number,
+    status: draft.status,
+    clientName: draft.clientName,
+    clientPhone: draft.clientPhone,
+    createdAt: draft.createdAt,
+    validUntil: draft.validUntil,
+    appointment: draft.appointment,
+    currencyCode: value['currency'] as String,
+    vatRatePercent: MoneyCodec.toDouble(value['tax_rate_percent']),
+    depositMinor: MoneyCodec.toMinor(
+      (value['totals'] as Json)['deposit_amount'],
+    ),
+    // Keep editable inputs; the backend's exact totals are authoritative.
+    lines: draft.lines,
+    note: draft.note,
+    paymentLink: draft.paymentLink,
+    serverTotals: totalsFromApi(value['totals'] as Json),
+  );
+
   // ---------------------------------------------------------------- ids
 
   static String quoteId(int id) => '$quotePrefix$id';
@@ -37,21 +76,28 @@ abstract final class QuoteApiMapper {
     final sentAt = _dateTimeOrNull(json['sent_at']);
     return Quote(
       id: quoteId((json['id'] as num).toInt()),
+      serverStatus: json['status'] as String?,
       number: json['number'] as String,
       status: QuoteStatus.quote,
       clientName: _client(json)['name'] as String? ?? '',
       clientPhone: _client(json)['phone'] as String?,
       appointment: _dateOrNull(json['appointment_date']),
       createdAt: createdAt,
-      validUntil: _dateOrNull(json['valid_until']) ?? createdAt.add(_placeholderValidity),
+      validUntil:
+          _dateOrNull(json['valid_until']) ??
+          createdAt.add(_placeholderValidity),
       currencyCode: json['currency'] as String,
       vatRatePercent: MoneyCodec.toDouble(json['tax_rate_percent']),
-      depositMinor: MoneyCodec.toMinor((json['totals'] as Json?)?['deposit_amount']),
+      depositMinor: MoneyCodec.toMinor(
+        (json['totals'] as Json?)?['deposit_amount'],
+      ),
+      serverTotals: totalsFromApi(json['totals'] as Json),
       lines: _lines(json['lines']),
       note: json['notes'] as String?,
       activity: [
         QuoteActivity(type: QuoteActivityType.created, at: createdAt),
-        if (sentAt != null) QuoteActivity(type: QuoteActivityType.shared, at: sentAt),
+        if (sentAt != null)
+          QuoteActivity(type: QuoteActivityType.shared, at: sentAt),
       ],
     );
   }
@@ -63,22 +109,32 @@ abstract final class QuoteApiMapper {
     final isPaid = json['status'] == _statusPaid;
     return Quote(
       id: invoiceId((json['id'] as num).toInt()),
+      serverStatus: json['status'] as String?,
+      sourceQuoteId: json['quote_id']?.toString(),
       number: json['number'] as String,
       status: isPaid ? QuoteStatus.paid : QuoteStatus.invoice,
-      clientName: _client(json)['name'] as String? ?? json['client_name'] as String? ?? '',
+      clientName:
+          _client(json)['name'] as String? ??
+          json['client_name'] as String? ??
+          '',
       clientPhone: _client(json)['phone'] as String?,
       createdAt: createdAt,
-      validUntil: _dateOrNull(json['due_date']) ?? createdAt.add(_placeholderValidity),
+      validUntil:
+          _dateOrNull(json['due_date']) ?? createdAt.add(_placeholderValidity),
       currencyCode: json['currency'] as String,
       vatRatePercent: MoneyCodec.toDouble(json['tax_rate_percent']),
-      depositMinor: MoneyCodec.toMinor(json['deposit_amount']),
+      depositMinor: MoneyCodec.toMinor(json['amount_paid']),
       lines: _lines(json['lines']),
       note: json['notes'] as String?,
       paymentLink: json['payment_link'] as String?,
       activity: [
         QuoteActivity(type: QuoteActivityType.created, at: createdAt),
-        QuoteActivity(type: QuoteActivityType.convertedToInvoice, at: createdAt),
-        if (paidAt != null) QuoteActivity(type: QuoteActivityType.markedPaid, at: paidAt),
+        QuoteActivity(
+          type: QuoteActivityType.convertedToInvoice,
+          at: createdAt,
+        ),
+        if (paidAt != null)
+          QuoteActivity(type: QuoteActivityType.markedPaid, at: paidAt),
       ],
     );
   }
@@ -92,6 +148,7 @@ abstract final class QuoteApiMapper {
     final profit = MoneyCodec.toMinor(json['profit']);
     return Quote(
       id: quoteId((json['id'] as num).toInt()),
+      serverStatus: json['status'] as String?,
       number: json['number'] as String,
       status: QuoteStatus.quote,
       clientName: json['client_name'] as String? ?? '',
@@ -113,11 +170,16 @@ abstract final class QuoteApiMapper {
     final due = MoneyCodec.toMinor(json['amount_due']);
     return Quote(
       id: invoiceId((json['id'] as num).toInt()),
+      serverStatus: json['status'] as String?,
+      sourceQuoteId: json['quote_id']?.toString(),
       number: json['number'] as String,
-      status: json['status'] == _statusPaid ? QuoteStatus.paid : QuoteStatus.invoice,
+      status: json['status'] == _statusPaid
+          ? QuoteStatus.paid
+          : QuoteStatus.invoice,
       clientName: json['client_name'] as String? ?? '',
       createdAt: createdAt,
-      validUntil: _dateOrNull(json['due_date']) ?? createdAt.add(_placeholderValidity),
+      validUntil:
+          _dateOrNull(json['due_date']) ?? createdAt.add(_placeholderValidity),
       currencyCode: json['currency'] as String,
       vatRatePercent: 0,
       depositMinor: total - due,
@@ -142,23 +204,36 @@ abstract final class QuoteApiMapper {
       'appointment_date': appointment == null ? null : _date(appointment),
       'valid_until': _date(quote.validUntil),
       'lines': [for (final line in quote.lines) lineToApi(line)],
-      'deposit': {'mode': 'fixed', 'value': MoneyCodec.toApi(quote.depositMinor)},
+      'deposit': {
+        'mode': 'fixed',
+        'value': MoneyCodec.toApi(quote.depositMinor),
+      },
       'tax_rate_percent': MoneyCodec.decimalToApi(quote.vatRatePercent),
       'notes': note == null || note.isEmpty ? null : note,
     };
   }
 
   static Map<String, Object?> lineToApi(QuoteLine line) {
-    final base = <String, Object?>{'description': _description(line), 'taxable': line.isTaxable};
+    final base = <String, Object?>{
+      'description': _description(line),
+      'taxable': line.isTaxable,
+    };
     switch (line.category) {
       case LineCategory.hair:
         final grams = line.grams ?? 0;
         final packCount = line.packs ?? 0;
         final wholePacks = packCount > 0;
-        final gramsPerPack = wholePacks ? (grams + (line.leftoverGrams ?? 0)) / packCount : grams.toDouble();
-        final packPrice = wholePacks ? line.costMinor / packCount : line.costMinor.toDouble();
+        final gramsPerPack = wholePacks
+            ? (grams + (line.leftoverGrams ?? 0)) / packCount
+            : grams.toDouble();
+        final packPrice = wholePacks
+            ? line.costMinor / packCount
+            : line.costMinor.toDouble();
         final markup =
-            line.markupPercent ?? (line.costMinor > 0 ? (line.amountMinor / line.costMinor - 1) * 100 : 0);
+            line.markupPercent ??
+            (line.costMinor > 0
+                ? (line.amountMinor / line.costMinor - 1) * 100
+                : 0);
         return {
           ...base,
           'kind': 'hair',
@@ -230,13 +305,17 @@ abstract final class QuoteApiMapper {
           id: id,
           category: LineCategory.hair,
           title: parts.first,
-          variant: parts.length > 1 ? parts.sublist(1).join(_hairSeparator) : null,
+          variant: parts.length > 1
+              ? parts.sublist(1).join(_hairSeparator)
+              : null,
           amountMinor: price,
           costMinor: cost,
           isTaxable: taxable,
           grams: MoneyCodec.toDouble(json['grams_required']).round(),
           packs: wholePacks ? packs : null,
-          leftoverGrams: wholePacks ? MoneyCodec.toDouble(json['leftover_grams']).round() : null,
+          leftoverGrams: wholePacks
+              ? MoneyCodec.toDouble(json['leftover_grams']).round()
+              : null,
           markupPercent: MoneyCodec.toDoubleOrNull(json['markup_percent']),
         );
       case 'labour':
@@ -261,7 +340,15 @@ abstract final class QuoteApiMapper {
           unitPriceMinor: price,
         );
       case 'material':
-        return _itemLine(json, id, description, LineCategory.material, price, cost, taxable);
+        return _itemLine(
+          json,
+          id,
+          description,
+          LineCategory.material,
+          price,
+          cost,
+          taxable,
+        );
       default:
         // A fee that passes through at cost is shipping; any other is an add-on.
         final isShipping = price > 0 && price == cost;
@@ -312,7 +399,9 @@ abstract final class QuoteApiMapper {
 
   static String _description(QuoteLine line) {
     final variant = line.variant?.trim();
-    if (line.category == LineCategory.hair && variant != null && variant.isNotEmpty) {
+    if (line.category == LineCategory.hair &&
+        variant != null &&
+        variant.isNotEmpty) {
       return '${line.title}$_hairSeparator$variant';
     }
     return line.title;
@@ -320,11 +409,14 @@ abstract final class QuoteApiMapper {
 
   static Json _client(Json json) => (json['client'] as Json?) ?? const {};
 
-  static DateTime _dateTime(Object? value) => DateTime.tryParse('${value ?? ''}')?.toLocal() ?? DateTime.now();
+  static DateTime _dateTime(Object? value) =>
+      DateTime.tryParse('${value ?? ''}')?.toLocal() ?? DateTime.now();
 
-  static DateTime? _dateTimeOrNull(Object? value) => value == null ? null : DateTime.tryParse('$value')?.toLocal();
+  static DateTime? _dateTimeOrNull(Object? value) =>
+      value == null ? null : DateTime.tryParse('$value')?.toLocal();
 
-  static DateTime? _dateOrNull(Object? value) => value == null ? null : DateTime.tryParse('$value');
+  static DateTime? _dateOrNull(Object? value) =>
+      value == null ? null : DateTime.tryParse('$value');
 
   static String _date(DateTime value) {
     final month = value.month.toString().padLeft(2, '0');

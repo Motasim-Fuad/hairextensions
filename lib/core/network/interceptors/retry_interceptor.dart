@@ -9,7 +9,8 @@ import 'package:hairextensions/core/network/api_response/http_status_codes.dart'
 /// and jitter. Non-idempotent writes are never replayed here; the offline sync
 /// queue owns their retries.
 class RetryInterceptor extends Interceptor {
-  RetryInterceptor({required this._dio, Random? random}) : _random = random ?? Random();
+  RetryInterceptor({required this._dio, Random? random})
+    : _random = random ?? Random();
 
   static const String _source = 'RetryInterceptor';
   static const Set<String> _idempotentMethods = {
@@ -29,7 +30,8 @@ class RetryInterceptor extends Interceptor {
     ErrorInterceptorHandler handler,
   ) async {
     final request = err.requestOptions;
-    final attempt = request.extra[NetworkConstants.retryAttemptKey] as int? ?? 0;
+    final attempt =
+        request.extra[NetworkConstants.retryAttemptKey] as int? ?? 0;
     if (attempt >= NetworkConstants.maxRetries || !_isRetryable(err)) {
       handler.next(err);
       return;
@@ -46,6 +48,9 @@ class RetryInterceptor extends Interceptor {
     try {
       final response = await _dio.fetch<Object?>(
         request.copyWith(
+          data: request.data is FormData
+              ? (request.data as FormData).clone()
+              : request.data,
           extra: {
             ...request.extra,
             NetworkConstants.retryAttemptKey: attempt + 1,
@@ -72,7 +77,8 @@ class RetryInterceptor extends Interceptor {
       case DioExceptionType.badResponse:
         final status = err.response?.statusCode ?? 0;
         return status == HttpStatusCodes.tooManyRequests ||
-            (status >= HttpStatusCodes.serverErrorStart && status != HttpStatusCodes.notImplemented);
+            (status >= HttpStatusCodes.serverErrorStart &&
+                status != HttpStatusCodes.notImplemented);
       case DioExceptionType.cancel:
       case DioExceptionType.badCertificate:
       case DioExceptionType.unknown:

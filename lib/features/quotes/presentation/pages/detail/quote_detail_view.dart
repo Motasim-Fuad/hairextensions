@@ -20,7 +20,6 @@ import 'package:hairextensions/features/quotes/presentation/bloc/detail/quote_de
 import 'package:hairextensions/features/quotes/presentation/extensions/quote_status_text.dart';
 import 'package:hairextensions/features/quotes/presentation/navigation/quote_navigation.dart';
 import 'package:hairextensions/features/quotes/presentation/pages/detail/widgets/quote_activity_tile.dart';
-import 'package:hairextensions/features/quotes/presentation/pages/detail/widgets/quote_lock_banner.dart';
 import 'package:hairextensions/features/quotes/presentation/widgets/amount_stat.dart';
 import 'package:hairextensions/features/quotes/presentation/widgets/delete_quote_dialog.dart';
 import 'package:hairextensions/l10n/gen/app_localizations.dart';
@@ -45,13 +44,37 @@ class QuoteDetailView extends StatelessWidget {
   Widget build(BuildContext context) {
     return BlocConsumer<QuoteDetailCubit, QuoteDetailState>(
       listenWhen: (previous, current) => !previous.isGone && current.isGone,
-      listener: (context, _) => context.canPop() ? context.pop() : context.go(AppRoutes.homePath),
+      listener: (context, _) =>
+          context.canPop() ? context.pop() : context.go(AppRoutes.homePath),
       builder: (context, state) {
         final quote = state.quote;
+        if (state.failure != null && quote == null) {
+          return Scaffold(
+            appBar: AppBar(title: const Text('Document')),
+            body: Center(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    state.failure!.localizedMessage(context.l10n),
+                    textAlign: TextAlign.center,
+                  ),
+                  TextButton(
+                    onPressed: context.read<QuoteDetailCubit>().retry,
+                    child: const Text('Retry'),
+                  ),
+                ],
+              ),
+            ),
+          );
+        }
         if (state.status == ViewStatus.loading || quote == null) {
           return const Scaffold(body: Center(child: AppLoader()));
         }
-        return _DetailScaffold(quote: quote, errorText: state.failure?.localizedMessage(context.l10n));
+        return _DetailScaffold(
+          quote: quote,
+          errorText: state.failure?.localizedMessage(context.l10n),
+        );
       },
     );
   }
@@ -77,7 +100,8 @@ class _DetailScaffold extends StatelessWidget {
     final cubit = context.read<QuoteDetailCubit>();
     final totals = quote.totals;
     final currency = quote.currencyCode;
-    String money(int minor) => MoneyFormatter.format(minor, currency, showDecimals: false);
+    String money(int minor) =>
+        MoneyFormatter.format(minor, currency, showDecimals: false);
     return Scaffold(
       appBar: AppTopBar(
         leading: const AppBackButton(),
@@ -88,9 +112,54 @@ class _DetailScaffold extends StatelessWidget {
         ),
       ),
       body: ListView(
-        padding: const EdgeInsets.fromLTRB(AppSpacing.xl, AppSpacing.sm, AppSpacing.xl, AppSpacing.xxl),
+        padding: const EdgeInsets.fromLTRB(
+          AppSpacing.xl,
+          AppSpacing.sm,
+          AppSpacing.xl,
+          AppSpacing.xxl,
+        ),
         children: [
-          const QuoteLockBanner(),
+          if (!quote.status.isInvoice)
+            AppOutlineButton(
+              label: l10n.actionEdit,
+              leadingIcon: AppIcon.pen,
+              onPressed: () => unawaited(
+                context.pushNamed<void>(
+                  AppRoutes.newQuote,
+                  queryParameters: {'edit': 'true'},
+                  extra: quote,
+                ),
+              ),
+            ),
+          if (quote.serverStatus != null) ...[
+            const SizedBox(height: AppSpacing.md),
+            Text(
+              'Status: ${quote.serverStatus}',
+              style: Theme.of(context).textTheme.titleSmall,
+            ),
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: [
+                for (final status
+                    in quote.status.isInvoice
+                        ? const ['unpaid', 'deposit_paid', 'paid']
+                        : switch (quote.serverStatus) {
+                            'draft' => const ['sent', 'accepted', 'declined'],
+                            'sent' => const ['draft', 'accepted', 'declined'],
+                            'accepted' => const ['sent', 'declined'],
+                            'declined' => const ['draft', 'sent'],
+                            _ => const <String>[],
+                          })
+                  ActionChip(
+                    label: Text(status.replaceAll('_', ' ')),
+                    onPressed: status == quote.serverStatus
+                        ? null
+                        : () => unawaited(cubit.updateStatus(status)),
+                  ),
+              ],
+            ),
+          ],
           const SizedBox(height: AppSpacing.lg),
           SectionCard(
             child: Column(
@@ -110,25 +179,41 @@ class _DetailScaffold extends StatelessWidget {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(quote.clientName, style: AppTextStyles.rowTitle.copyWith(color: colors.textPrimary)),
+                          Text(
+                            quote.clientName,
+                            style: AppTextStyles.rowTitle.copyWith(
+                              color: colors.textPrimary,
+                            ),
+                          ),
                           if (quote.clientPhone != null)
                             Text(
                               quote.clientPhone!,
-                              style: AppTextStyles.caption.copyWith(color: colors.textTertiary),
+                              style: AppTextStyles.caption.copyWith(
+                                color: colors.textTertiary,
+                              ),
                             ),
                         ],
                       ),
                     ),
-                    AppStatusChip(label: quote.status.label(l10n), tone: quote.status.tone),
+                    AppStatusChip(
+                      label: quote.status.label(l10n),
+                      tone: quote.status.tone,
+                    ),
                   ],
                 ),
                 Row(
                   children: [
                     Expanded(
-                      child: AmountStat(label: l10n.statTotal, value: money(totals.totalMinor)),
+                      child: AmountStat(
+                        label: l10n.statTotal,
+                        value: money(totals.totalMinor),
+                      ),
                     ),
                     Expanded(
-                      child: AmountStat(label: l10n.statDeposit, value: money(totals.depositMinor)),
+                      child: AmountStat(
+                        label: l10n.statDeposit,
+                        value: money(totals.depositMinor),
+                      ),
                     ),
                     Expanded(
                       child: AmountStat(
@@ -144,11 +229,19 @@ class _DetailScaffold extends StatelessWidget {
                   children: [
                     Expanded(
                       child: Text(
-                        l10n.quoteLineSummary(quote.lines.length, money(totals.vatMinor)),
-                        style: AppTextStyles.detail.copyWith(color: colors.textSecondary),
+                        l10n.quoteLineSummary(
+                          quote.lines.length,
+                          money(totals.vatMinor),
+                        ),
+                        style: AppTextStyles.detail.copyWith(
+                          color: colors.textSecondary,
+                        ),
                       ),
                     ),
-                    AppLinkButton(label: l10n.actionView, onPressed: () => context.openQuotePreview(quote.id)),
+                    AppLinkButton(
+                      label: l10n.actionView,
+                      onPressed: () => context.openQuotePreview(quote.id),
+                    ),
                   ],
                 ),
               ],
@@ -167,11 +260,17 @@ class _DetailScaffold extends StatelessWidget {
               if (quote.status != QuoteStatus.paid)
                 Expanded(
                   child: AppSoftButton(
-                    label: quote.status == QuoteStatus.quote ? l10n.actionConvertToInvoice : l10n.actionMarkPaid,
-                    leadingIcon: quote.status == QuoteStatus.quote ? AppIcon.file : AppIcon.check,
+                    label: quote.status == QuoteStatus.quote
+                        ? l10n.actionConvertToInvoice
+                        : l10n.actionMarkPaid,
+                    leadingIcon: quote.status == QuoteStatus.quote
+                        ? AppIcon.file
+                        : AppIcon.check,
                     isCompact: true,
                     onPressed: () => unawaited(
-                      quote.status == QuoteStatus.quote ? cubit.convertToInvoice() : cubit.markPaid(),
+                      quote.status == QuoteStatus.quote
+                          ? cubit.convertToInvoice()
+                          : cubit.markPaid(),
                     ),
                   ),
                 ),
@@ -179,7 +278,15 @@ class _DetailScaffold extends StatelessWidget {
                 child: AppOutlineButton(
                   label: l10n.actionDuplicate,
                   leadingIcon: AppIcon.copy,
-                  onPressed: () => unawaited(context.startNewQuote(template: quote)),
+                  onPressed: () async {
+                    if (quote.status.isInvoice) {
+                      await context.startNewQuote(template: quote);
+                    } else {
+                      final created = await cubit.duplicate();
+                      if (context.mounted && created != null)
+                        context.openQuote(created.id);
+                    }
+                  },
                 ),
               ),
             ],
@@ -192,7 +299,10 @@ class _DetailScaffold extends StatelessWidget {
           OverlineLabel(text: l10n.quoteActivity, color: colors.textTertiary),
           const SizedBox(height: AppSpacing.sm),
           SectionCard(
-            padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg, vertical: AppSpacing.sm),
+            padding: const EdgeInsets.symmetric(
+              horizontal: AppSpacing.lg,
+              vertical: AppSpacing.sm,
+            ),
             child: Column(
               children: [
                 for (final entry in quote.activity)
@@ -233,10 +343,11 @@ class _DetailScaffold extends StatelessWidget {
     QuoteActivityType.markedPaid => AppIcon.check,
   };
 
-  String _activityTitle(AppLocalizations l10n, QuoteActivityType type) => switch (type) {
-    QuoteActivityType.created => l10n.activityCreated,
-    QuoteActivityType.shared => l10n.activityShared,
-    QuoteActivityType.convertedToInvoice => l10n.activityConverted,
-    QuoteActivityType.markedPaid => l10n.activityPaid,
-  };
+  String _activityTitle(AppLocalizations l10n, QuoteActivityType type) =>
+      switch (type) {
+        QuoteActivityType.created => l10n.activityCreated,
+        QuoteActivityType.shared => l10n.activityShared,
+        QuoteActivityType.convertedToInvoice => l10n.activityConverted,
+        QuoteActivityType.markedPaid => l10n.activityPaid,
+      };
 }

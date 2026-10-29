@@ -63,7 +63,16 @@ class _QuoteBuilderViewState extends State<QuoteBuilderView> {
 
   @override
   void dispose() {
-    for (final controller in [_client, _phone, _appointment, _shipping, _vat, _deposit, _note, _link]) {
+    for (final controller in [
+      _client,
+      _phone,
+      _appointment,
+      _shipping,
+      _vat,
+      _deposit,
+      _note,
+      _link,
+    ]) {
       controller.dispose();
     }
     super.dispose();
@@ -108,10 +117,25 @@ class _QuoteBuilderViewState extends State<QuoteBuilderView> {
     }
   }
 
-  void _review() {
-    final quote = context.read<QuoteBuilderCubit>().submit();
-    if (quote != null) {
-      unawaited(context.pushNamed<void>(AppRoutes.quoteReview, extra: quote));
+  bool _pricing = false;
+  Future<void> _review() async {
+    if (_pricing) return;
+    _pricing = true;
+    try {
+      final quote = await context.read<QuoteBuilderCubit>().pricedDraft();
+      if (mounted && quote != null)
+        await context.pushNamed<void>(AppRoutes.quoteReview, extra: quote);
+    } on Object {
+      if (mounted)
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text(
+              'Unable to calculate prices from the server. Please retry.',
+            ),
+          ),
+        );
+    } finally {
+      _pricing = false;
     }
   }
 
@@ -129,12 +153,17 @@ class _QuoteBuilderViewState extends State<QuoteBuilderView> {
         return Scaffold(
           appBar: AppTopBar(
             leading: const AppBackButton(icon: AppIcon.close),
-            title: state.kind.isInvoice ? context.l10n.builderTitleInvoice : context.l10n.builderTitle,
+            title: state.kind.isInvoice
+                ? context.l10n.builderTitleInvoice
+                : context.l10n.builderTitle,
             subtitle: state.number.isEmpty
                 ? context.l10n.builderNumberPending
                 : context.l10n.builderSubtitle(state.number),
             trailing: [
-              AppStatusChip(label: context.l10n.statusDraft, tone: StatusTone.neutral),
+              AppStatusChip(
+                label: context.l10n.statusDraft,
+                tone: StatusTone.neutral,
+              ),
               const SizedBox(width: AppSpacing.sm),
             ],
           ),
@@ -151,7 +180,8 @@ class _QuoteBuilderViewState extends State<QuoteBuilderView> {
             onPickAppointment: () => unawaited(_pickAppointment(state)),
             onAdd: (open) => unawaited(_add(open)),
             onDepositTypeChanged: (type) {
-              final cubit = context.read<QuoteBuilderCubit>()..setDepositType(type);
+              final cubit = context.read<QuoteBuilderCubit>()
+                ..setDepositType(type);
               _fillDeposit(cubit.state);
             },
           ),
@@ -204,11 +234,16 @@ class _BuilderBody extends StatelessWidget {
     final cubit = context.read<QuoteBuilderCubit>();
     final currency = state.currency;
     final totals = state.quote.totals;
-    String money(int minor, {bool decimals = false}) => MoneyFormatter.format(minor, currency, showDecimals: decimals);
+    String money(int minor, {bool decimals = false}) =>
+        MoneyFormatter.format(minor, currency, showDecimals: decimals);
 
     List<Widget> lines(LineCategory category) => [
       for (final line in state.lines.where((line) => line.category == category))
-        BuilderLineTile(line: line, currency: currency, onRemove: () => cubit.removeLine(line.id)),
+        BuilderLineTile(
+          line: line,
+          currency: currency,
+          onRemove: () => cubit.removeLine(line.id),
+        ),
     ];
 
     String? sectionAmount(LineCategory category) {
@@ -262,7 +297,11 @@ class _BuilderBody extends StatelessWidget {
                     onTap: onPickAppointment,
                     suffixIcon: Padding(
                       padding: const EdgeInsets.all(AppSpacing.md),
-                      child: AppSvgIcon(AppIcon.calendar, size: AppSizes.iconMd, color: colors.textTertiary),
+                      child: AppSvgIcon(
+                        AppIcon.calendar,
+                        size: AppSizes.iconMd,
+                        color: colors.textTertiary,
+                      ),
                     ),
                   ),
                 ),
@@ -281,7 +320,8 @@ class _BuilderBody extends StatelessWidget {
             ...lines(LineCategory.hair),
             DashedAddButton(
               label: l10n.actionAddHair,
-              onPressed: () => onAdd(() => AddHairSheet.show(context, currency: currency)),
+              onPressed: () =>
+                  onAdd(() => AddHairSheet.show(context, currency: currency)),
             ),
             if (state.showLinesError) ...[
               const SizedBox(height: AppSpacing.sm),
@@ -300,7 +340,9 @@ class _BuilderBody extends StatelessWidget {
             ...lines(LineCategory.service),
             DashedAddButton(
               label: l10n.actionAddService,
-              onPressed: () => onAdd(() => AddServiceSheet.show(context, currency: currency)),
+              onPressed: () => onAdd(
+                () => AddServiceSheet.show(context, currency: currency),
+              ),
             ),
           ],
         ),
@@ -309,7 +351,9 @@ class _BuilderBody extends StatelessWidget {
         icon: AppIcon.wallet,
         title: l10n.labelMaterials,
         amount: sectionAmount(LineCategory.material),
-        initiallyExpanded: state.lines.any((line) => line.category == LineCategory.material),
+        initiallyExpanded: state.lines.any(
+          (line) => line.category == LineCategory.material,
+        ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
@@ -317,7 +361,11 @@ class _BuilderBody extends StatelessWidget {
             DashedAddButton(
               label: l10n.actionAddMaterial,
               onPressed: () => onAdd(
-                () => AddItemSheet.show(context, category: LineCategory.material, currency: currency),
+                () => AddItemSheet.show(
+                  context,
+                  category: LineCategory.material,
+                  currency: currency,
+                ),
               ),
             ),
           ],
@@ -327,7 +375,9 @@ class _BuilderBody extends StatelessWidget {
         icon: AppIcon.star,
         title: l10n.sectionAddOns,
         amount: sectionAmount(LineCategory.addOn),
-        initiallyExpanded: state.lines.any((line) => line.category == LineCategory.addOn),
+        initiallyExpanded: state.lines.any(
+          (line) => line.category == LineCategory.addOn,
+        ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
@@ -335,7 +385,11 @@ class _BuilderBody extends StatelessWidget {
             DashedAddButton(
               label: l10n.actionAddAddOn,
               onPressed: () => onAdd(
-                () => AddItemSheet.show(context, category: LineCategory.addOn, currency: currency),
+                () => AddItemSheet.show(
+                  context,
+                  category: LineCategory.addOn,
+                  currency: currency,
+                ),
               ),
             ),
           ],
@@ -352,7 +406,8 @@ class _BuilderBody extends StatelessWidget {
               controller: shipping,
               prefixText: currency,
               hintText: l10n.amountHint,
-              onChanged: (value) => cubit.setShipping(AmountParser.toMinor(value)),
+              onChanged: (value) =>
+                  cubit.setShipping(AmountParser.toMinor(value)),
             ),
             AppSwitchTile(
               title: l10n.lineTaxable,
@@ -376,13 +431,19 @@ class _BuilderBody extends StatelessWidget {
                 controller: vat,
                 suffixText: l10n.unitPercent,
                 decimals: 1,
-                onChanged: (value) => cubit.setVatRate(AmountParser.decimal(value)),
+                onChanged: (value) =>
+                    cubit.setVatRate(AmountParser.decimal(value)),
               ),
             ),
             Expanded(
               child: Text(
-                l10n.vatAppliedTo(totals.taxableLineCount, money(totals.taxableMinor, decimals: true)),
-                style: AppTextStyles.caption.copyWith(color: colors.textSecondary),
+                l10n.vatAppliedTo(
+                  totals.taxableLineCount,
+                  money(totals.taxableMinor, decimals: true),
+                ),
+                style: AppTextStyles.caption.copyWith(
+                  color: colors.textSecondary,
+                ),
               ),
             ),
           ],
@@ -398,8 +459,14 @@ class _BuilderBody extends StatelessWidget {
           children: [
             AppSegmentedControl<DepositType>(
               options: [
-                SegmentOption(value: DepositType.percent, label: l10n.depositPercentOfTotal),
-                SegmentOption(value: DepositType.fixed, label: l10n.depositFixedAmount),
+                SegmentOption(
+                  value: DepositType.percent,
+                  label: l10n.depositPercentOfTotal,
+                ),
+                SegmentOption(
+                  value: DepositType.fixed,
+                  label: l10n.depositFixedAmount,
+                ),
               ],
               selected: state.depositType,
               onChanged: onDepositTypeChanged,
@@ -409,15 +476,21 @@ class _BuilderBody extends StatelessWidget {
                 controller: deposit,
                 suffixText: l10n.unitPercent,
                 decimals: 1,
-                onChanged: (value) => cubit.setDepositPercent(AmountParser.decimal(value)),
+                onChanged: (value) =>
+                    cubit.setDepositPercent(AmountParser.decimal(value)),
               )
             else
               AppNumberField(
                 controller: deposit,
                 prefixText: currency,
-                onChanged: (value) => cubit.setDepositFixed(AmountParser.toMinor(value)),
+                onChanged: (value) =>
+                    cubit.setDepositFixed(AmountParser.toMinor(value)),
               ),
-            CalcRow(label: l10n.labelBalanceDue, value: money(totals.balanceMinor, decimals: true), isStrong: true),
+            CalcRow(
+              label: l10n.labelBalanceDue,
+              value: money(totals.balanceMinor, decimals: true),
+              isStrong: true,
+            ),
           ],
         ),
       ),
@@ -445,7 +518,11 @@ class _BuilderBody extends StatelessWidget {
               onChanged: cubit.setPaymentLink,
               suffixIcon: Padding(
                 padding: const EdgeInsets.all(AppSpacing.md),
-                child: AppSvgIcon(AppIcon.link, size: AppSizes.iconMd, color: colors.textTertiary),
+                child: AppSvgIcon(
+                  AppIcon.link,
+                  size: AppSizes.iconMd,
+                  color: colors.textTertiary,
+                ),
               ),
             ),
           ],
@@ -453,8 +530,17 @@ class _BuilderBody extends StatelessWidget {
       ),
     ];
     return SingleChildScrollView(
-      padding: const EdgeInsets.fromLTRB(AppSpacing.xl, AppSpacing.sm, AppSpacing.xl, AppSpacing.xxl),
-      child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, spacing: AppSpacing.cardGap, children: sections),
+      padding: const EdgeInsets.fromLTRB(
+        AppSpacing.xl,
+        AppSpacing.sm,
+        AppSpacing.xl,
+        AppSpacing.xxl,
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        spacing: AppSpacing.cardGap,
+        children: sections,
+      ),
     );
   }
 }

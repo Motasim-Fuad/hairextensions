@@ -20,6 +20,7 @@ abstract final class BusinessProfileApiMapper {
     final isFixed = mode == _fixed;
     return BusinessProfileModel(
       businessName: map['business_name'] as String,
+      logoPath: map['logo_url'] as String?,
       ownerName: map['owner_name'] as String?,
       tagline: map['tagline'] as String?,
       phone: map['phone'] as String?,
@@ -48,9 +49,12 @@ abstract final class BusinessProfileApiMapper {
   /// and `PATCH /v1/business`. Document numbers are owned by the server and the
   /// accent colour and logo path never leave the device, so none of them are sent.
   static Map<String, Object?> toApi(Map<String, Object?> row) {
-    final isFixed = row[BusinessProfileTable.depositType] == DepositType.fixed.name;
-    final fixedMinor = (row[BusinessProfileTable.depositFixedMinor] as num?)?.toInt() ?? 0;
-    final percent = (row[BusinessProfileTable.depositPercent] as num?)?.toDouble() ?? 0;
+    final isFixed =
+        row[BusinessProfileTable.depositType] == DepositType.fixed.name;
+    final fixedMinor =
+        (row[BusinessProfileTable.depositFixedMinor] as num?)?.toInt() ?? 0;
+    final percent =
+        (row[BusinessProfileTable.depositPercent] as num?)?.toDouble() ?? 0;
     return {
       'business_name': row[BusinessProfileTable.businessName],
       'owner_name': _text(row[BusinessProfileTable.ownerName]),
@@ -64,11 +68,15 @@ abstract final class BusinessProfileApiMapper {
       'quote_prefix': _prefix(row[BusinessProfileTable.quotePrefix]),
       'invoice_prefix': _prefix(row[BusinessProfileTable.invoicePrefix]),
       'currency': row[BusinessProfileTable.currencyCode],
-      'tax_rate_percent': ((row[BusinessProfileTable.taxRatePercent] as num?) ?? 0).toStringAsFixed(2),
+      'tax_rate_percent':
+          ((row[BusinessProfileTable.taxRatePercent] as num?) ?? 0)
+              .toStringAsFixed(2),
       'deposit_mode': isFixed ? _fixed : _percent,
-      'deposit_value': isFixed ? (fixedMinor / _minorPerMajor).toStringAsFixed(2) : percent.toStringAsFixed(2),
+      'deposit_value': isFixed
+          ? (fixedMinor / _minorPerMajor).toStringAsFixed(2)
+          : percent.toStringAsFixed(2),
       'quote_validity_days': row[BusinessProfileTable.quoteValidityDays],
-      'quote_terms': _text(row[BusinessProfileTable.defaultNote]),
+      'quote_terms': _text(row[BusinessProfileTable.defaultNote]) ?? '',
     };
   }
 
@@ -81,11 +89,16 @@ abstract final class BusinessProfileApiMapper {
 
   /// The API only accepts 1-10 characters from A-Z and 0-9 ("Q-" becomes "Q").
   static String? _prefix(Object? value) {
-    final cleaned = (value is String ? value : '').toUpperCase().replaceAll(_notAlphanumeric, '');
+    final cleaned = (value is String ? value : '').toUpperCase().replaceAll(
+      _notAlphanumeric,
+      '',
+    );
     if (cleaned.isEmpty) {
       return null;
     }
-    return cleaned.length > _maxPrefixLength ? cleaned.substring(0, _maxPrefixLength) : cleaned;
+    return cleaned.length > _maxPrefixLength
+        ? cleaned.substring(0, _maxPrefixLength)
+        : cleaned;
   }
 
   /// The API requires a full http(s) link; "yourstudio.com" becomes "https://yourstudio.com".
@@ -94,12 +107,15 @@ abstract final class BusinessProfileApiMapper {
     if (text == null || text.isEmpty) {
       return null;
     }
-    return text.startsWith('http://') || text.startsWith('https://') ? text : 'https://$text';
+    return text.startsWith('http://') || text.startsWith('https://')
+        ? text
+        : 'https://$text';
   }
 
   static double _number(Object? value) => double.tryParse('${value ?? 0}') ?? 0;
 
   static int _millis(Object? value) {
-    return DateTime.tryParse('${value ?? ''}')?.millisecondsSinceEpoch ?? DateTime.now().millisecondsSinceEpoch;
+    return DateTime.tryParse('${value ?? ''}')?.millisecondsSinceEpoch ??
+        DateTime.now().millisecondsSinceEpoch;
   }
 }

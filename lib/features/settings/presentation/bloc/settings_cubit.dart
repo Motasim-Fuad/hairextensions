@@ -1,3 +1,6 @@
+import 'package:hairextensions/core/di/injection.dart';
+import 'package:hairextensions/core/network/client/api_client.dart';
+
 import 'dart:async';
 
 import 'package:equatable/equatable.dart';
@@ -18,10 +21,23 @@ part 'settings_state.dart';
 
 @injectable
 class SettingsCubit extends Cubit<SettingsState> {
-  SettingsCubit(this._profiles, this._catalog, this._subscription, this._config, this._links, this._authRepository, this._gate)
-    : super(SettingsState(isPro: _subscription.isPro, version: _gate.installedVersion));
+  SettingsCubit(
+    this._profiles,
+    this._catalog,
+    this._subscription,
+    this._config,
+    this._links,
+    this._authRepository,
+    this._gate,
+  ) : super(
+        SettingsState(
+          isPro: _subscription.isPro,
+          version: _gate.installedVersion,
+        ),
+      );
 
-  static const String _manageSubscriptionsUrl = 'https://apps.apple.com/account/subscriptions';
+  static const String _manageSubscriptionsUrl =
+      'https://apps.apple.com/account/subscriptions';
   static const String _mailScheme = 'mailto:';
   static const String _whatsappBase = 'https://wa.me/';
   static final RegExp _nonDigits = RegExp('[^0-9]');
@@ -38,21 +54,42 @@ class SettingsCubit extends Cubit<SettingsState> {
   void start() {
     _subscription.addListener(_onSubscription);
     _subscriptions
-      ..add(_profiles.watch().listen((profile) => emit(state.copyWith(profile: profile))))
-      ..add(_catalog.watchProducts().listen((items) => emit(state.copyWith(productCount: items.length))))
-      ..add(_catalog.watchMaterials().listen((items) => emit(state.copyWith(materialCount: items.length))))
-      ..add(_catalog.watchServices().listen((items) => emit(state.copyWith(serviceCount: items.length))));
+      ..add(
+        _profiles.watch().listen(
+          (profile) => emit(state.copyWith(profile: profile)),
+        ),
+      )
+      ..add(
+        _catalog.watchProducts().listen(
+          (items) => emit(state.copyWith(productCount: items.length)),
+        ),
+      )
+      ..add(
+        _catalog.watchMaterials().listen(
+          (items) => emit(state.copyWith(materialCount: items.length)),
+        ),
+      )
+      ..add(
+        _catalog.watchServices().listen(
+          (items) => emit(state.copyWith(serviceCount: items.length)),
+        ),
+      );
   }
 
   void _onSubscription() => emit(state.copyWith(isPro: _subscription.isPro));
 
-  String get _privacyUrl => _gate.links.privacyUrl.isNotEmpty ? _gate.links.privacyUrl : _config.privacyPolicyUrl;
+  String get _privacyUrl => _gate.links.privacyUrl.isNotEmpty
+      ? _gate.links.privacyUrl
+      : _config.privacyPolicyUrl;
 
-  String get _termsUrl => _gate.links.termsUrl.isNotEmpty ? _gate.links.termsUrl : _config.termsUrl;
+  String get _termsUrl =>
+      _gate.links.termsUrl.isNotEmpty ? _gate.links.termsUrl : _config.termsUrl;
 
   /// E-mail first, WhatsApp as the fallback; null when the backend has neither.
   String? get _supportUrl {
-    final email = _gate.links.supportEmail.isNotEmpty ? _gate.links.supportEmail : _config.supportEmail;
+    final email = _gate.links.supportEmail.isNotEmpty
+        ? _gate.links.supportEmail
+        : _config.supportEmail;
     if (email.isNotEmpty) {
       return '$_mailScheme$email';
     }
@@ -71,7 +108,7 @@ class SettingsCubit extends Cubit<SettingsState> {
   /// Store billing is not wired yet. Mock and non-production builds restore
   /// locally so the whole flow can be tried; production reports an error.
   Future<void> restore() async {
-    if (_config.environment != AppEnvironment.mock && _config.isProduction) {
+    if (_config.environment != AppEnvironment.mock) {
       emit(state.copyWith(errorKind: SettingsError.purchase));
       return;
     }
@@ -92,14 +129,28 @@ class SettingsCubit extends Cubit<SettingsState> {
     }
     final opened = await _links.open(url);
     if (!isClosed) {
-      emit(opened ? state.copyWith(clearError: true) : state.copyWith(errorKind: SettingsError.link));
+      emit(
+        opened
+            ? state.copyWith(clearError: true)
+            : state.copyWith(errorKind: SettingsError.link),
+      );
     }
   }
 
+  Future<bool> deleteAccount() async {
+    final response = await getIt<ApiClient>().delete<void>(
+      '/v1/auth/me',
+      parser: (_) {},
+    );
+    if (!response.isSuccess) return false;
+    await _authRepository.endSession();
+    return true;
+  }
 
   Future<void> logout() async {
     await _authRepository.endSession();
   }
+
   @override
   Future<void> close() async {
     _subscription.removeListener(_onSubscription);

@@ -40,7 +40,12 @@ class _LoginViewState extends State<LoginView> {
 
   void _submit() {
     FocusScope.of(context).unfocus();
-    unawaited(context.read<LoginCubit>().submit(email: _email.text, password: _password.text));
+    unawaited(
+      context.read<LoginCubit>().submit(
+        email: _email.text,
+        password: _password.text,
+      ),
+    );
   }
 
   @override
@@ -49,8 +54,9 @@ class _LoginViewState extends State<LoginView> {
     final cubit = context.read<LoginCubit>();
     return BlocConsumer<LoginCubit, LoginState>(
       listenWhen: (previous, current) =>
-          previous.status != AuthSubmitStatus.success && current.status == AuthSubmitStatus.success,
-      listener: (context, _) => context.goNamed(AppRoutes.paywall),
+          previous.status != AuthSubmitStatus.success &&
+          current.status == AuthSubmitStatus.success,
+      listener: (context, _) => context.goNamed(AppRoutes.home),
       builder: (context, state) {
         return AuthScaffold(
           title: l10n.authLoginTitle,
@@ -91,7 +97,9 @@ class _LoginViewState extends State<LoginView> {
               label: l10n.authActionLogin,
               onPressed: _submit,
               isLoading: state.isSubmitting,
-              errorText: state.status == AuthSubmitStatus.failure ? l10n.authErrorSubmitFailed : null,
+              errorText: state.status == AuthSubmitStatus.failure
+                  ? l10n.authErrorSubmitFailed
+                  : null,
             ),
             AuthSwitchRow(
               prompt: l10n.authNoAccountPrompt,

@@ -1,3 +1,8 @@
+import 'package:hairextensions/features/library/presentation/pages/all_items/all_library_items_page.dart';
+import 'package:hairextensions/core/di/injection.dart';
+import 'package:hairextensions/features/library/domain/repositories/library_repository.dart';
+import 'package:hairextensions/features/library/data/repositories/remote_library_repository.dart';
+
 import 'dart:async';
 
 import 'package:flutter/material.dart';
@@ -26,7 +31,9 @@ import 'package:hairextensions/shared/widgets/shimmer/skeleton_list.dart';
 
 /// Design 4.2. Prices shown in the library currency (AED in the demo).
 class LibraryView extends StatefulWidget {
-  const LibraryView({super.key});
+  const LibraryView({super.key, this.currencyCode = currency});
+
+  final String currencyCode;
 
   static const String currency = 'AED';
 
@@ -47,8 +54,9 @@ class _LibraryViewState extends State<LibraryView> {
   Widget build(BuildContext context) {
     final l10n = context.l10n;
     final colors = context.colors;
-    const currency = LibraryView.currency;
-    String money(int minor, {bool decimals = false}) => MoneyFormatter.format(minor, currency, showDecimals: decimals);
+    final currency = widget.currencyCode;
+    String money(int minor, {bool decimals = false}) =>
+        MoneyFormatter.format(minor, currency, showDecimals: decimals);
     return Scaffold(
       body: SafeArea(
         bottom: false,
@@ -63,19 +71,36 @@ class _LibraryViewState extends State<LibraryView> {
                 LibraryItemTile(
                   icon: AppIcon.package,
                   title: product.name,
-                  subtitle: [product.type.label(l10n), product.colour].where((part) => part.isNotEmpty).join(l10n.separatorDot),
+                  subtitle: [
+                    product.type.label(l10n),
+                    product.colour,
+                  ].where((part) => part.isNotEmpty).join(l10n.separatorDot),
                   detail: l10n.productPackPrice(
                     money(product.packPriceMinor),
                     product.unitsPerPack,
-                    product.soldBy == SoldBy.pieces ? l10n.unitStrands : l10n.unitGramsShort,
+                    product.soldBy == SoldBy.pieces
+                        ? l10n.unitStrands
+                        : l10n.unitGramsShort,
                   ),
                   chipLabel: money(product.costPerUnitMinor, decimals: true),
-                  chipCaption: product.soldBy == SoldBy.pieces ? l10n.perStrand : l10n.perGram,
-                  onTap: () => unawaited(context.pushNamed<void>(AppRoutes.productForm, extra: product)),
+                  chipCaption: product.soldBy == SoldBy.pieces
+                      ? l10n.perStrand
+                      : l10n.perGram,
+                  onTap: () => unawaited(
+                    context.pushNamed<void>(
+                      AppRoutes.productForm,
+                      extra: product,
+                    ),
+                  ),
                 ),
             ];
             return ListView(
-              padding: const EdgeInsets.fromLTRB(AppSpacing.xl, AppSpacing.md, AppSpacing.xl, AppSpacing.xxl),
+              padding: const EdgeInsets.fromLTRB(
+                AppSpacing.xl,
+                AppSpacing.md,
+                AppSpacing.xl,
+                AppSpacing.xxl,
+              ),
               children: [
                 AppLargeTitle(
                   title: l10n.navLibrary,
@@ -84,34 +109,68 @@ class _LibraryViewState extends State<LibraryView> {
                       icon: AppIcon.plus,
                       semanticLabel: l10n.homeAddProduct,
                       isTinted: true,
-                      onPressed: () => unawaited(context.pushNamed<void>(AppRoutes.productForm)),
+                      onPressed: () => unawaited(
+                        context.pushNamed<void>(AppRoutes.productForm),
+                      ),
                     ),
                   ],
                 ),
                 const SizedBox(height: AppSpacing.lg),
-                AppSearchField(controller: _search, hintText: l10n.librarySearchHint, onChanged: cubit.search),
+                OutlinedButton.icon(
+                  icon: const Icon(Icons.inventory_2_outlined),
+                  label: const Text(
+                    'Manage hair, labour, services, materials & fees',
+                    textAlign: TextAlign.center,
+                  ),
+                  onPressed: () async {
+                    await Navigator.of(context).push<void>(
+                      MaterialPageRoute(
+                        builder: (_) => const AllLibraryItemsPage(),
+                      ),
+                    );
+                    final repository = getIt<LibraryRepository>();
+                    if (repository is RemoteLibraryRepository)
+                      await repository.reload();
+                  },
+                ),
+                const SizedBox(height: AppSpacing.lg),
+                AppSearchField(
+                  controller: _search,
+                  hintText: l10n.librarySearchHint,
+                  onChanged: cubit.search,
+                ),
                 const SizedBox(height: AppSpacing.lg),
                 Row(
                   children: [
                     Expanded(
                       child: Text(
                         l10n.libraryCount(state.visibleCount),
-                        style: AppTextStyles.detailStrong.copyWith(color: colors.textSecondary),
+                        style: AppTextStyles.detailStrong.copyWith(
+                          color: colors.textSecondary,
+                        ),
                       ),
                     ),
                     InkWell(
-                        onTap: cubit.toggleSort,
-                        child: Row(
-                          spacing: AppSpacing.xs,
-                          children: [
-                            Text(
-                              state.sort == LibrarySort.recent ? l10n.sortRecent : l10n.sortName,
-                              style: AppTextStyles.detailAccent.copyWith(color: colors.textSecondary),
+                      onTap: cubit.toggleSort,
+                      child: Row(
+                        spacing: AppSpacing.xs,
+                        children: [
+                          Text(
+                            state.sort == LibrarySort.recent
+                                ? l10n.sortRecent
+                                : l10n.sortName,
+                            style: AppTextStyles.detailAccent.copyWith(
+                              color: colors.textSecondary,
                             ),
-                            AppSvgIcon(AppIcon.chevronDown, size: AppSizes.iconSm, color: colors.textSecondary),
-                          ],
-                        ),
+                          ),
+                          AppSvgIcon(
+                            AppIcon.chevronDown,
+                            size: AppSizes.iconSm,
+                            color: colors.textSecondary,
+                          ),
+                        ],
                       ),
+                    ),
                   ],
                 ),
                 const SizedBox(height: AppSpacing.md),

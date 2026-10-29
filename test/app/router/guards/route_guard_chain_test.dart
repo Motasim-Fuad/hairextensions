@@ -59,25 +59,28 @@ void main() {
     expect(land(AppRoutes.newQuotePath), AppRoutes.onboardingPath);
   });
 
-  test('after onboarding the paywall is shown, then setup', () {
+  test('after onboarding protected setup starts without a paywall', () {
     session.onboardingSeen = true;
-    expect(land(AppRoutes.paywallPath), AppRoutes.paywallPath);
+    expect(land(AppRoutes.paywallPath), AppRoutes.setupPath);
     expect(land(AppRoutes.homePath), AppRoutes.setupPath);
   });
 
   test('with subscriptions off the paywall is skipped straight to setup', () {
     session.onboardingSeen = true;
-    expect(land(AppRoutes.paywallPath, flags: {FeatureKey.subscriptions: false}), AppRoutes.setupPath);
+    expect(
+      land(AppRoutes.paywallPath, flags: {FeatureKey.subscriptions: false}),
+      AppRoutes.setupPath,
+    );
   });
 
-  test('a finished free user lands on tabs and hits the paywall for pro routes', () {
+  test('a finished free user can open tabs and quote creation', () {
     session
       ..onboardingSeen = true
       ..setupCompleted = true;
     expect(land(AppRoutes.homePath), AppRoutes.homePath);
     expect(land(AppRoutes.setupPath), AppRoutes.homePath);
     expect(land(AppRoutes.onboardingPath), AppRoutes.homePath);
-    expect(land(AppRoutes.newQuotePath), AppRoutes.paywallPath);
+    expect(land(AppRoutes.newQuotePath), AppRoutes.newQuotePath);
   });
 
   test('a pro user opens the quote builder directly', () {

@@ -9,7 +9,7 @@ import 'package:hairextensions/features/quotes/presentation/bloc/preview/documen
 import 'package:hairextensions/features/quotes/presentation/bloc/preview/quote_preview_cubit.dart';
 import 'package:hairextensions/features/quotes/presentation/documents/quote_document_factory.dart';
 import 'package:hairextensions/features/quotes/presentation/pages/preview/widgets/share_channel_button.dart';
-import 'package:hairextensions/features/quotes/presentation/widgets/quote_document_preview.dart';
+import 'package:hairextensions/features/quotes/presentation/widgets/backend_pdf_preview.dart';
 import 'package:hairextensions/shared/state/view_status.dart';
 import 'package:hairextensions/shared/widgets/buttons/app_back_button.dart';
 import 'package:hairextensions/shared/widgets/buttons/app_icon_button.dart';
@@ -29,6 +29,26 @@ class QuotePreviewView extends StatelessWidget {
     return BlocBuilder<QuotePreviewCubit, QuotePreviewState>(
       builder: (context, state) {
         final quote = state.quote;
+        if (state.failure != null && quote == null) {
+          return Scaffold(
+            appBar: AppBar(title: const Text('PDF preview')),
+            body: Center(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Text(
+                    'Unable to load the document. Please retry.',
+                    textAlign: TextAlign.center,
+                  ),
+                  TextButton(
+                    onPressed: context.read<QuotePreviewCubit>().retry,
+                    child: const Text('Retry'),
+                  ),
+                ],
+              ),
+            ),
+          );
+        }
         if (state.status == ViewStatus.loading || quote == null) {
           return const Scaffold(body: Center(child: AppLoader()));
         }
@@ -36,28 +56,45 @@ class QuotePreviewView extends StatelessWidget {
         final document = state.mode == DocumentMode.client
             ? QuoteDocumentFactory.client(l10n, quote, state.profile)
             : QuoteDocumentFactory.internal(l10n, quote, state.profile);
-        final onShare = state.isSharing ? null : () => unawaited(cubit.share(document));
+        final onShare = state.isSharing
+            ? null
+            : () => unawaited(cubit.share(document));
         return Scaffold(
           appBar: AppTopBar(
             leading: const AppBackButton(),
             title: l10n.previewTitle,
             trailing: [
-              AppIconButton(icon: AppIcon.download, semanticLabel: l10n.actionSave, onPressed: onShare),
+              AppIconButton(
+                icon: AppIcon.download,
+                semanticLabel: l10n.actionSave,
+                onPressed: onShare,
+              ),
             ],
           ),
           body: ListView(
-            padding: const EdgeInsets.fromLTRB(AppSpacing.xl, AppSpacing.sm, AppSpacing.xl, AppSpacing.xxl),
+            padding: const EdgeInsets.fromLTRB(
+              AppSpacing.xl,
+              AppSpacing.sm,
+              AppSpacing.xl,
+              AppSpacing.xxl,
+            ),
             children: [
               AppSegmentedControl<DocumentMode>(
                 options: [
-                  SegmentOption(value: DocumentMode.client, label: l10n.previewClientPdf),
-                  SegmentOption(value: DocumentMode.internal, label: l10n.previewCostSheet),
+                  SegmentOption(
+                    value: DocumentMode.client,
+                    label: l10n.previewClientPdf,
+                  ),
+                  SegmentOption(
+                    value: DocumentMode.internal,
+                    label: l10n.previewCostSheet,
+                  ),
                 ],
                 selected: state.mode,
                 onChanged: cubit.selectMode,
               ),
               const SizedBox(height: AppSpacing.lg),
-              QuoteDocumentPreview(document: document, logoPath: state.profile?.logoPath),
+              BackendPdfPreview(path: document.apiPath!),
             ],
           ),
           bottomNavigationBar: BottomActionBar(
@@ -66,13 +103,31 @@ class QuotePreviewView extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.stretch,
               spacing: AppSpacing.lg,
               children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceAround,
+                Wrap(
+                  alignment: WrapAlignment.spaceAround,
+                  spacing: 12,
+                  runSpacing: 12,
                   children: [
-                    ShareChannelButton(icon: AppIcon.message, label: l10n.shareWhatsApp, onTap: onShare),
-                    ShareChannelButton(icon: AppIcon.mail, label: l10n.actionEmail, onTap: onShare),
-                    ShareChannelButton(icon: AppIcon.download, label: l10n.actionSave, onTap: onShare),
-                    ShareChannelButton(icon: AppIcon.more, label: l10n.shareMore, onTap: onShare),
+                    ShareChannelButton(
+                      icon: AppIcon.message,
+                      label: l10n.shareWhatsApp,
+                      onTap: onShare,
+                    ),
+                    ShareChannelButton(
+                      icon: AppIcon.mail,
+                      label: l10n.actionEmail,
+                      onTap: onShare,
+                    ),
+                    ShareChannelButton(
+                      icon: AppIcon.download,
+                      label: l10n.actionSave,
+                      onTap: onShare,
+                    ),
+                    ShareChannelButton(
+                      icon: AppIcon.more,
+                      label: l10n.shareMore,
+                      onTap: onShare,
+                    ),
                   ],
                 ),
                 AppPrimaryButton(

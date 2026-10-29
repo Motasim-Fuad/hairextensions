@@ -37,9 +37,14 @@ class AppListTile extends StatelessWidget {
         child: InkWell(
           onTap: onTap,
           child: ConstrainedBox(
-            constraints: const BoxConstraints(minHeight: AppSizes.listTileMinHeight),
+            constraints: const BoxConstraints(
+              minHeight: AppSizes.listTileMinHeight,
+            ),
             child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg, vertical: AppSpacing.sm),
+              padding: const EdgeInsets.symmetric(
+                horizontal: AppSpacing.lg,
+                vertical: AppSpacing.sm,
+              ),
               child: Row(
                 children: [
                   IconBadge(
@@ -53,18 +58,35 @@ class AppListTile extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        Text(title, style: context.textTheme.titleSmall?.copyWith(color: titleColor)),
-                        if (subtitle != null) Text(subtitle!, style: context.textTheme.bodySmall),
+                        Text(
+                          title,
+                          style: context.textTheme.titleSmall?.copyWith(
+                            color: titleColor,
+                          ),
+                        ),
+                        if (subtitle != null)
+                          Text(subtitle!, style: context.textTheme.bodySmall),
                       ],
                     ),
                   ),
                   if (trailingText != null) ...[
                     const SizedBox(width: AppSpacing.sm),
-                    Text(trailingText!, style: context.textTheme.bodySmall),
+                    Flexible(
+                      child: Text(
+                        trailingText!,
+                        style: context.textTheme.bodySmall,
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
                   ],
                   if (showChevron) ...[
                     const SizedBox(width: AppSpacing.xs),
-                    AppSvgIcon(AppIcon.chevronRight, size: AppSizes.iconMd, color: colors.textTertiary),
+                    AppSvgIcon(
+                      AppIcon.chevronRight,
+                      size: AppSizes.iconMd,
+                      color: colors.textTertiary,
+                    ),
                   ],
                 ],
               ),

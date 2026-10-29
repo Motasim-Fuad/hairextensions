@@ -1,6 +1,5 @@
 import 'package:fpdart/fpdart.dart';
 import 'package:hairextensions/core/constants/media_constants.dart';
-import 'package:hairextensions/core/database/tables/business_profile_table.dart';
 import 'package:hairextensions/core/errors/failures/failure.dart';
 import 'package:hairextensions/core/errors/run_local.dart';
 import 'package:hairextensions/core/media/image_permission_denied_exception.dart';
@@ -8,7 +7,6 @@ import 'package:hairextensions/core/network/mappers/api_failure_mapper.dart';
 import 'package:hairextensions/core/media/image_source_picker.dart';
 import 'package:hairextensions/core/session/app_session.dart';
 import 'package:hairextensions/core/shared_entities/business_profile.dart';
-import 'package:hairextensions/core/sync/sync_operation_type.dart';
 import 'package:hairextensions/core/sync/sync_queue.dart';
 import 'package:hairextensions/core/utils/clock.dart';
 import 'package:hairextensions/features/business_setup/data/datasources/local/business_profile_local_data_source.dart';
@@ -18,27 +16,25 @@ import 'package:hairextensions/features/business_setup/data/mappers/business_pro
 import 'package:hairextensions/features/business_setup/domain/repositories/business_profile_repository.dart';
 import 'package:injectable/injectable.dart';
 
-/// Local first: sqflite is the source of truth and every save is queued for
-/// the server. Works fully offline and in the mock environment.
+/// Signup steps keep a local draft. Completing setup and editing settings
+/// require server acknowledgement before reporting success.
 @LazySingleton(as: BusinessProfileRepository)
 class BusinessProfileRepositoryImpl implements BusinessProfileRepository {
   BusinessProfileRepositoryImpl(
     this._local,
     this._logos,
     this._picker,
-    this._syncQueue,
+    SyncQueue syncQueue,
     this._session,
     this._clock,
     this._remote,
   );
 
   static const String _source = 'BusinessProfileRepository';
-  static const String _singletonEntityId = '${BusinessProfileTable.singletonId}';
 
   final BusinessProfileLocalDataSource _local;
   final LogoFileStore _logos;
   final ImageSourcePicker _picker;
-  final SyncQueue _syncQueue;
   final AppSession _session;
   final Clock _clock;
   final BusinessProfileRemoteDataSource _remote;
@@ -52,7 +48,10 @@ class BusinessProfileRepositoryImpl implements BusinessProfileRepository {
   }
 
   @override
-  Future<Either<Failure, Unit>> saveProfile(BusinessProfile profile, {required bool completeSetup}) async {
+  Future<Either<Failure, Unit>> saveProfile(
+    BusinessProfile profile, {
+    required bool completeSetup,
+  }) async {
     final saved = await runLocal(_source, () async {
       final existing = await _local.read();
       final now = _clock.now().millisecondsSinceEpoch;
@@ -62,12 +61,6 @@ class BusinessProfileRepositoryImpl implements BusinessProfileRepository {
         updatedAt: now,
       );
       await _local.upsert(model);
-      await _syncQueue.enqueue(
-        entity: BusinessProfileTable.name,
-        entityId: _singletonEntityId,
-        type: existing == null ? SyncOperationType.create : SyncOperationType.update,
-        payload: model.toJson(),
-      );
       final previousLogo = existing?.logoPath;
       if (previousLogo != null && previousLogo != profile.logoPath) {
         await _logos.delete(previousLogo);
@@ -77,17 +70,18 @@ class BusinessProfileRepositoryImpl implements BusinessProfileRepository {
     if (saved.isLeft()) {
       return saved.map((_) => unit);
     }
-    if (!completeSetup) {
-      return const Right(unit);
-    }
+    // Intermediate signup steps stay a local draft until the final setup step.
+    if (!completeSetup && !_session.setupCompleted) return const Right(unit);
     // Finishing setup creates the business on the server right now, so a
     // rejected field shows up on the form instead of failing in the background.
-    final response = await _remote.push(saved.getOrElse((_) => throw StateError('saved')).toJson());
+    final response = await _remote.push(
+      saved.getOrElse((_) => throw StateError('saved')).toJson(),
+    );
     if (!response.isSuccess) {
       return Left(ApiFailureMapper.toFailure(response));
     }
     return runLocal(_source, () async {
-      await _session.markSetupCompleted();
+      if (completeSetup) await _session.markSetupCompleted();
       return unit;
     });
   }

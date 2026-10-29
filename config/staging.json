@@ -1,10 +1,10 @@
 {
   "FLAVOR": "staging",
   "ENV": "dev",
-  "API_BASE_URL": "https://staging-api.example.com",
-  "PRIVACY_POLICY_URL": "https://example.com/privacy",
-  "TERMS_URL": "https://example.com/terms",
-  "SUPPORT_EMAIL": "support@example.com",
+  "API_BASE_URL": "http://56.228.53.36:8000",
+  "PRIVACY_POLICY_URL": "",
+  "TERMS_URL": "",
+  "SUPPORT_EMAIL": "",
   "ENABLE_CERT_PINNING": false,
   "CERT_SHA256": ""
 }

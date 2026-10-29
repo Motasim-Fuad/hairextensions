@@ -20,7 +20,10 @@ class PaywallFooter extends StatelessWidget {
     final l10n = context.l10n;
     final colors = context.colors;
     final cubit = context.read<PaywallCubit>();
-    final separator = Text(l10n.middleDot, style: AppTextStyles.caption.copyWith(color: colors.textTertiary));
+    final separator = Text(
+      l10n.middleDot,
+      style: AppTextStyles.caption.copyWith(color: colors.textTertiary),
+    );
     final linkStyle = TextButton.styleFrom(
       foregroundColor: colors.textSecondary,
       textStyle: AppTextStyles.captionStrong,
@@ -30,32 +33,44 @@ class PaywallFooter extends StatelessWidget {
     );
     return BlocBuilder<PaywallCubit, PaywallState>(
       buildWhen: (previous, current) =>
-          previous.isPurchasing != current.isPurchasing || previous.failure != current.failure,
+          previous.isPurchasing != current.isPurchasing ||
+          previous.failure != current.failure,
       builder: (context, state) => Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.stretch,
         spacing: AppSpacing.md,
         children: [
           AppPrimaryButton(
-            label: l10n.paywallStartTrial(PaywallPlan.trialDays),
+            label: cubit.billingAvailable
+                ? l10n.paywallStartTrial(PaywallPlan.trialDays)
+                : 'Subscriptions unavailable',
             isLoading: state.isPurchasing,
-            onPressed: cubit.startTrial,
-            errorText: state.failure == PaywallFailure.purchase ? l10n.paywallUnavailable : null,
+            onPressed: cubit.billingAvailable ? cubit.startTrial : null,
+            errorText: state.failure == PaywallFailure.purchase
+                ? l10n.paywallUnavailable
+                : null,
           ),
-          Text(
-            l10n.paywallRenewal(MoneyFormatter.format(PaywallPlan.annual.priceMinor, PaywallPlan.currency)),
-            textAlign: TextAlign.center,
-            style: AppTextStyles.caption.copyWith(color: colors.textTertiary),
-          ),
+          if (cubit.billingAvailable)
+            Text(
+              l10n.paywallRenewal(
+                MoneyFormatter.format(
+                  PaywallPlan.annual.priceMinor,
+                  PaywallPlan.currency,
+                ),
+              ),
+              textAlign: TextAlign.center,
+              style: AppTextStyles.caption.copyWith(color: colors.textTertiary),
+            ),
           Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
+              Wrap(
+                alignment: WrapAlignment.center,
+                crossAxisAlignment: WrapCrossAlignment.center,
                 spacing: AppSpacing.xs,
                 children: [
                   TextButton(
-                    onPressed: cubit.restore,
+                    onPressed: cubit.billingAvailable ? cubit.restore : null,
                     style: linkStyle.copyWith(
                       foregroundColor: WidgetStatePropertyAll(colors.primary),
                       textStyle: WidgetStatePropertyAll(AppTextStyles.chip),
@@ -63,12 +78,24 @@ class PaywallFooter extends StatelessWidget {
                     child: Text(l10n.actionRestorePurchases),
                   ),
                   separator,
-                  TextButton(onPressed: cubit.openTerms, style: linkStyle, child: Text(l10n.linkTerms)),
+                  TextButton(
+                    onPressed: cubit.openTerms,
+                    style: linkStyle,
+                    child: Text(l10n.linkTerms),
+                  ),
                   separator,
-                  TextButton(onPressed: cubit.openPrivacy, style: linkStyle, child: Text(l10n.linkPrivacy)),
+                  TextButton(
+                    onPressed: cubit.openPrivacy,
+                    style: linkStyle,
+                    child: Text(l10n.linkPrivacy),
+                  ),
                 ],
               ),
-              InlineErrorText(message: state.failure == PaywallFailure.link ? l10n.errorOpenLink : null),
+              InlineErrorText(
+                message: state.failure == PaywallFailure.link
+                    ? l10n.errorOpenLink
+                    : null,
+              ),
             ],
           ),
         ],

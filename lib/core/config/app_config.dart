@@ -27,16 +27,13 @@ class AppConfig {
       ),
       apiBaseUrl: const String.fromEnvironment(
         'API_BASE_URL',
-        defaultValue: 'https://price-to-profit-alga-chul.onrender.com',
+        defaultValue: 'http://56.228.53.36:8000',
       ),
       privacyPolicyUrl: const String.fromEnvironment(
         'PRIVACY_POLICY_URL',
         defaultValue: '',
       ),
-      termsUrl: const String.fromEnvironment(
-        'TERMS_URL',
-        defaultValue: '',
-      ),
+      termsUrl: const String.fromEnvironment('TERMS_URL', defaultValue: ''),
       supportEmail: const String.fromEnvironment(
         'SUPPORT_EMAIL',
         defaultValue: '',
@@ -44,7 +41,10 @@ class AppConfig {
       enableCertificatePinning: const bool.fromEnvironment(
         'ENABLE_CERT_PINNING',
       ),
-      certificateFingerprints: fingerprints.split(',').where((value) => value.isNotEmpty).toList(),
+      certificateFingerprints: fingerprints
+          .split(',')
+          .where((value) => value.isNotEmpty)
+          .toList(),
     );
   }
 

@@ -24,21 +24,43 @@ class QuotePreviewCubit extends Cubit<QuotePreviewState> {
   final BusinessProfileReader _profiles;
   final QuoteDocumentSharer _sharer;
   StreamSubscription<Quote?>? _subscription;
+  String? _id;
+  Future<void> retry() async {
+    final id = _id;
+    if (id != null) await start(id);
+  }
 
   Future<void> start(String id) async {
+    _id = id;
+    await _subscription?.cancel();
+    emit(state.copyWith(status: ViewStatus.loading, clearFailure: true));
     final profile = await _profiles.read();
     if (isClosed) {
       return;
     }
     emit(state.copyWith(profile: profile));
-    _subscription = _repository.watch(id).listen((quote) {
-      if (quote != null) {
-        emit(state.copyWith(status: ViewStatus.ready, quote: quote));
-      }
-    });
+    _subscription = _repository
+        .watch(id)
+        .listen(
+          (quote) {
+            if (quote != null) {
+              emit(state.copyWith(status: ViewStatus.ready, quote: quote));
+            }
+          },
+          onError: (Object error, StackTrace stack) {
+            if (!isClosed)
+              emit(
+                state.copyWith(
+                  status: ViewStatus.ready,
+                  failure: error is Failure ? error : const UnknownFailure(),
+                ),
+              );
+          },
+        );
   }
 
-  void selectMode(DocumentMode mode) => emit(state.copyWith(mode: mode, clearFailure: true));
+  void selectMode(DocumentMode mode) =>
+      emit(state.copyWith(mode: mode, clearFailure: true));
 
   Future<void> share(QuoteDocument document) async {
     final quote = state.quote;
@@ -51,7 +73,8 @@ class QuotePreviewCubit extends Cubit<QuotePreviewState> {
       return;
     }
     await result.match(
-      (failure) async => emit(state.copyWith(isSharing: false, failure: failure)),
+      (failure) async =>
+          emit(state.copyWith(isSharing: false, failure: failure)),
       (_) async {
         emit(state.copyWith(isSharing: false));
         if (state.mode == DocumentMode.client) {

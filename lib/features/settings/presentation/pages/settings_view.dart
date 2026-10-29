@@ -1,3 +1,5 @@
+import 'package:hairextensions/features/settings/presentation/pages/business_defaults/business_defaults_page.dart';
+
 import 'dart:async';
 
 import 'package:flutter/material.dart';
@@ -7,8 +9,6 @@ import 'package:hairextensions/core/extensions/l10n_context_extension.dart';
 import 'package:hairextensions/core/extensions/theme_context_extension.dart';
 import 'package:hairextensions/core/routing/app_routes.dart';
 import 'package:hairextensions/core/theme/app_icon.dart';
-import 'package:hairextensions/core/theme/tokens/app_radius.dart';
-import 'package:hairextensions/core/theme/tokens/app_sizes.dart';
 import 'package:hairextensions/core/theme/tokens/app_spacing.dart';
 import 'package:hairextensions/core/theme/tokens/app_text_styles.dart';
 import 'package:hairextensions/core/utils/percent_formatter.dart';
@@ -16,12 +16,10 @@ import 'package:hairextensions/features/settings/presentation/bloc/settings_cubi
 import 'package:hairextensions/features/settings/presentation/bloc/settings_error.dart';
 import 'package:hairextensions/features/settings/presentation/widgets/settings_group.dart';
 import 'package:hairextensions/shared/widgets/buttons/app_icon_button.dart';
-import 'package:hairextensions/shared/widgets/buttons/app_link_button.dart';
 import 'package:hairextensions/shared/widgets/feedback/inline_error_text.dart';
 import 'package:hairextensions/shared/widgets/layout/app_large_title.dart';
 import 'package:hairextensions/shared/widgets/layout/app_list_tile.dart';
 import 'package:hairextensions/shared/widgets/layout/section_card.dart';
-import 'package:hairextensions/shared/widgets/media/app_svg_icon.dart';
 import 'package:hairextensions/shared/widgets/media/business_logo.dart';
 
 /// Design 4.4.
@@ -66,12 +64,11 @@ class SettingsView extends StatelessWidget {
         if (!context.mounted) return;
 
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Unable to log out. Please try again.'),
-          ),
+          const SnackBar(content: Text('Unable to log out. Please try again.')),
         );
       }
     }
+
     return Scaffold(
       body: SafeArea(
         bottom: false,
@@ -79,13 +76,21 @@ class SettingsView extends StatelessWidget {
           builder: (context, state) {
             final cubit = context.read<SettingsCubit>();
             final profile = state.profile;
-            final businessName = profile?.businessName ?? l10n.sampleBusinessName;
-            void editProfile() => context.goNamed(AppRoutes.editBusinessProfile);
+            final businessName =
+                profile?.businessName ?? l10n.sampleBusinessName;
+            void editProfile() =>
+                context.goNamed(AppRoutes.editBusinessProfile);
             void editDefaults() => context.goNamed(AppRoutes.editQuoteDefaults);
             void openLibrary() => context.goNamed(AppRoutes.library);
-            void openPaywall() => unawaited(context.pushNamed<void>(AppRoutes.paywall));
+            void openPaywall() =>
+                unawaited(context.pushNamed<void>(AppRoutes.paywall));
             return ListView(
-              padding: const EdgeInsets.fromLTRB(AppSpacing.xl, AppSpacing.md, AppSpacing.xl, AppSpacing.xxl),
+              padding: const EdgeInsets.fromLTRB(
+                AppSpacing.xl,
+                AppSpacing.md,
+                AppSpacing.xl,
+                AppSpacing.xxl,
+              ),
               children: [
                 AppLargeTitle(title: l10n.navSettings),
                 const SizedBox(height: AppSpacing.lg),
@@ -94,86 +99,94 @@ class SettingsView extends StatelessWidget {
                   child: Row(
                     spacing: AppSpacing.md,
                     children: [
-                      BusinessLogo(businessName: businessName, logoPath: profile?.logoPath),
+                      BusinessLogo(
+                        businessName: businessName,
+                        logoPath: profile?.logoPath,
+                      ),
                       Expanded(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text(businessName, style: AppTextStyles.planTitle.copyWith(color: colors.textPrimary)),
+                            Text(
+                              businessName,
+                              style: AppTextStyles.planTitle.copyWith(
+                                color: colors.textPrimary,
+                              ),
+                            ),
                             if ((profile?.email ?? '').isNotEmpty)
                               Text(
                                 profile!.email!,
-                                style: AppTextStyles.caption.copyWith(color: colors.textTertiary),
+                                style: AppTextStyles.caption.copyWith(
+                                  color: colors.textTertiary,
+                                ),
                               ),
                           ],
                         ),
                       ),
-                      AppIconButton(icon: AppIcon.pen, semanticLabel: l10n.actionEdit, onPressed: editProfile),
+                      AppIconButton(
+                        icon: AppIcon.pen,
+                        semanticLabel: l10n.actionEdit,
+                        onPressed: editProfile,
+                      ),
                     ],
                   ),
                 ),
                 const SizedBox(height: AppSpacing.md),
-                DecoratedBox(
-                  decoration: BoxDecoration(gradient: colors.heroGradient, borderRadius: AppRadius.lgAll),
-                  child: Padding(
-                    padding: const EdgeInsets.all(AppSpacing.lg),
-                    child: Row(
-                      spacing: AppSpacing.md,
-                      children: [
-                        AppSvgIcon(AppIcon.crown, size: AppSizes.iconLg, color: colors.gold),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                state.isPro ? l10n.settingsProActive : l10n.settingsProInactive,
-                                style: AppTextStyles.rowTitle.copyWith(color: colors.onPrimary),
-                              ),
-                              Text(
-                                state.isPro ? l10n.settingsProActiveDetail : l10n.settingsProInactiveDetail,
-                                style: AppTextStyles.caption.copyWith(color: colors.onPrimary),
-                              ),
-                            ],
-                          ),
-                        ),
-                        AppLinkButton(
-                          label: state.isPro ? l10n.actionManage : l10n.actionUpgrade,
-                          color: colors.onPrimary,
-                          onPressed: state.isPro ? () => unawaited(cubit.manageSubscription()) : openPaywall,
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
                 if (state.errorKind != null) ...[
                   const SizedBox(height: AppSpacing.sm),
                   InlineErrorText(
-                    message: state.errorKind == SettingsError.link ? l10n.errorOpenLink : l10n.paywallUnavailable,
+                    message: state.errorKind == SettingsError.link
+                        ? l10n.errorOpenLink
+                        : l10n.paywallUnavailable,
                   ),
                 ],
                 const SizedBox(height: AppSpacing.section),
                 SettingsGroup(
                   title: l10n.settingsGroupBusiness,
                   children: [
-                    AppListTile(icon: AppIcon.briefcase, title: l10n.settingsBusinessProfile, onTap: editProfile),
-                    AppListTile(icon: AppIcon.palette, title: l10n.settingsPdfBranding, onTap: editProfile),
+                    AppListTile(
+                      icon: AppIcon.briefcase,
+                      title: l10n.settingsBusinessProfile,
+                      onTap: editProfile,
+                    ),
+                    AppListTile(
+                      icon: AppIcon.palette,
+                      title: l10n.settingsPdfBranding,
+                      onTap: editProfile,
+                    ),
                     AppListTile(
                       icon: AppIcon.percent,
                       title: l10n.settingsQuoteDefaults,
                       trailingText: profile == null
                           ? null
                           : [
-                        profile.currencyCode,
-                        l10n.percentValue(PercentFormatter.format(profile.taxRatePercent)),
-                      ].join(l10n.separatorDot),
+                              profile.currencyCode,
+                              l10n.percentValue(
+                                PercentFormatter.format(profile.taxRatePercent),
+                              ),
+                            ].join(l10n.separatorDot),
                       onTap: editDefaults,
+                    ),
+                    AppListTile(
+                      icon: AppIcon.percent,
+                      title: 'Pricing & invoice settings',
+                      onTap: () => unawaited(
+                        Navigator.of(context).push<void>(
+                          MaterialPageRoute(
+                            builder: (_) => const BusinessDefaultsPage(),
+                          ),
+                        ),
+                      ),
                     ),
                     AppListTile(
                       icon: AppIcon.hash,
                       title: l10n.settingsNumbering,
                       trailingText: profile == null
                           ? null
-                          : l10n.numberingValue(profile.quotePrefix, profile.invoicePrefix),
+                          : l10n.numberingValue(
+                              profile.quotePrefix,
+                              profile.invoicePrefix,
+                            ),
                       onTap: editDefaults,
                     ),
                   ],
@@ -196,13 +209,8 @@ class SettingsView extends StatelessWidget {
                   children: [
                     AppListTile(
                       icon: AppIcon.crown,
-                      title: l10n.settingsManageSubscription,
-                      onTap: state.isPro ? () => unawaited(cubit.manageSubscription()) : openPaywall,
-                    ),
-                    AppListTile(
-                      icon: AppIcon.refresh,
-                      title: l10n.actionRestorePurchases,
-                      onTap: () => unawaited(cubit.restore()),
+                      title: 'Subscription',
+                      onTap: openPaywall,
                     ),
                   ],
                 ),
@@ -210,18 +218,56 @@ class SettingsView extends StatelessWidget {
                 SettingsGroup(
                   title: l10n.settingsGroupAbout,
                   children: [
-                    if (cubit.hasPrivacyLink)
-                      AppListTile(
-                        icon: AppIcon.shield,
-                        title: l10n.settingsPrivacy,
-                        onTap: () => unawaited(cubit.openPrivacy()),
-                      ),
-                    if (cubit.hasTermsLink)
-                      AppListTile(
-                        icon: AppIcon.file,
-                        title: l10n.settingsTerms,
-                        onTap: () => unawaited(cubit.openTerms()),
-                      ),
+                    AppListTile(
+                      icon: AppIcon.shield,
+                      title: l10n.settingsPrivacy,
+                      onTap: () {
+                        if (cubit.hasPrivacyLink) {
+                          unawaited(cubit.openPrivacy());
+                        } else {
+                          showDialog<void>(
+                            context: context,
+                            builder: (context) => AlertDialog(
+                              title: const Text('Privacy policy'),
+                              content: const Text(
+                                'The privacy policy is not available yet. Please try again later.',
+                              ),
+                              actions: [
+                                TextButton(
+                                  onPressed: () => Navigator.pop(context),
+                                  child: const Text('Close'),
+                                ),
+                              ],
+                            ),
+                          );
+                        }
+                      },
+                    ),
+                    AppListTile(
+                      icon: AppIcon.file,
+                      title: l10n.settingsTerms,
+                      onTap: () {
+                        if (cubit.hasTermsLink) {
+                          unawaited(cubit.openTerms());
+                        } else {
+                          showDialog<void>(
+                            context: context,
+                            builder: (context) => AlertDialog(
+                              title: const Text('Terms & conditions'),
+                              content: const Text(
+                                'The terms and conditions are not available yet. Please try again later.',
+                              ),
+                              actions: [
+                                TextButton(
+                                  onPressed: () => Navigator.pop(context),
+                                  child: const Text('Close'),
+                                ),
+                              ],
+                            ),
+                          );
+                        }
+                      },
+                    ),
                     if (cubit.hasSupportLink)
                       AppListTile(
                         icon: AppIcon.help,
@@ -235,6 +281,61 @@ class SettingsView extends StatelessWidget {
                   title: 'Account',
                   children: [
                     ListTile(
+                      leading: const Icon(Icons.info_outline),
+                      title: const Text('About Price to Profit'),
+                      onTap: () => showAboutDialog(
+                        context: context,
+                        applicationName: 'Price to Profit',
+                        applicationVersion: state.version,
+                        children: const [
+                          Text(
+                            'Quotes, invoices and profit tracking for hair extension professionals.',
+                          ),
+                        ],
+                      ),
+                    ),
+                    ListTile(
+                      leading: const Icon(Icons.delete_forever_outlined),
+                      title: const Text('Delete account'),
+                      onTap: () async {
+                        final confirmed = await showDialog<bool>(
+                          context: context,
+                          builder: (dialogContext) => AlertDialog(
+                            title: const Text('Permanently delete account?'),
+                            content: const Text(
+                              'This deletes your account, business, library, quotes and invoices. This cannot be undone.',
+                            ),
+                            actions: [
+                              TextButton(
+                                onPressed: () =>
+                                    Navigator.pop(dialogContext, false),
+                                child: const Text('Cancel'),
+                              ),
+                              TextButton(
+                                onPressed: () =>
+                                    Navigator.pop(dialogContext, true),
+                                child: const Text('Delete permanently'),
+                              ),
+                            ],
+                          ),
+                        );
+                        if (confirmed != true) return;
+                        final deleted = await cubit.deleteAccount();
+                        if (!context.mounted) return;
+                        if (deleted) {
+                          context.goNamed(AppRoutes.login);
+                        } else {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text(
+                                'Unable to delete your account. Please retry.',
+                              ),
+                            ),
+                          );
+                        }
+                      },
+                    ),
+                    ListTile(
                       leading: const Icon(Icons.logout),
                       title: const Text('Log out'),
                       trailing: const Icon(Icons.chevron_right),
@@ -246,9 +347,13 @@ class SettingsView extends StatelessWidget {
                 const SizedBox(height: AppSpacing.xl),
 
                 Text(
-                  state.version == null ? l10n.appName : l10n.settingsVersion(state.version!),
+                  state.version == null
+                      ? l10n.appName
+                      : l10n.settingsVersion(state.version!),
                   textAlign: TextAlign.center,
-                  style: AppTextStyles.caption.copyWith(color: colors.textTertiary),
+                  style: AppTextStyles.caption.copyWith(
+                    color: colors.textTertiary,
+                  ),
                 ),
               ],
             );
@@ -256,7 +361,5 @@ class SettingsView extends StatelessWidget {
         ),
       ),
     );
-
-
   }
 }

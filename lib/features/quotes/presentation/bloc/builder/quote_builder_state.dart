@@ -23,11 +23,13 @@ final class QuoteBuilderState extends Equatable {
     this.note = '',
     this.paymentLink = '',
     this.showErrors = false,
+    this.serverQuote,
   });
 
   static const double _percent = 100;
   static const String shippingLineId = 'shipping';
 
+  final Quote? serverQuote;
   final ViewStatus status;
   final String id;
   final DateTime createdAt;
@@ -61,6 +63,7 @@ final class QuoteBuilderState extends Equatable {
   bool get showLinesError => showErrors && !hasLines;
 
   Quote get quote {
+    if (serverQuote != null) return serverQuote!;
     final draft = Quote(
       id: id,
       number: number,
@@ -93,12 +96,17 @@ final class QuoteBuilderState extends Equatable {
   }
 
   int sectionTotal(LineCategory category) {
-    return lines.where((line) => line.category == category).fold(0, (sum, line) => sum + line.amountMinor);
+    return lines
+        .where((line) => line.category == category)
+        .fold(0, (sum, line) => sum + line.amountMinor);
   }
 
-  static String? _orNull(String value) => value.trim().isEmpty ? null : value.trim();
+  static String? _orNull(String value) =>
+      value.trim().isEmpty ? null : value.trim();
 
   QuoteBuilderState copyWith({
+    String? id,
+    Quote? serverQuote,
     ViewStatus? status,
     QuoteStatus? kind,
     String? quoteNumber,
@@ -121,7 +129,8 @@ final class QuoteBuilderState extends Equatable {
   }) {
     return QuoteBuilderState(
       status: status ?? this.status,
-      id: id,
+      serverQuote: serverQuote,
+      id: id ?? this.id,
       createdAt: createdAt,
       kind: kind ?? this.kind,
       quoteNumber: quoteNumber ?? this.quoteNumber,
@@ -147,6 +156,7 @@ final class QuoteBuilderState extends Equatable {
   @override
   List<Object?> get props => [
     status,
+    serverQuote,
     id,
     createdAt,
     kind,

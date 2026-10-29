@@ -23,7 +23,7 @@ class PaywallView extends StatelessWidget {
     if (context.canPop()) {
       context.pop();
     } else {
-      context.goNamed(AppRoutes.setup);
+      context.goNamed(AppRoutes.settings);
     }
   }
 
@@ -31,7 +31,8 @@ class PaywallView extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = context.l10n;
     return BlocListener<PaywallCubit, PaywallState>(
-      listenWhen: (previous, current) => !previous.isUnlocked && current.isUnlocked,
+      listenWhen: (previous, current) =>
+          !previous.isUnlocked && current.isUnlocked,
       listener: (context, _) => _close(context),
       child: Scaffold(
         body: SafeArea(
@@ -39,7 +40,12 @@ class PaywallView extends StatelessWidget {
             children: [
               Expanded(
                 child: SingleChildScrollView(
-                  padding: const EdgeInsets.fromLTRB(AppSpacing.xl, AppSpacing.sm, AppSpacing.xl, AppSpacing.xxl),
+                  padding: const EdgeInsets.fromLTRB(
+                    AppSpacing.xl,
+                    AppSpacing.sm,
+                    AppSpacing.xl,
+                    AppSpacing.xxl,
+                  ),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     spacing: AppSpacing.section,
@@ -58,20 +64,35 @@ class PaywallView extends StatelessWidget {
                       Column(
                         spacing: AppSpacing.md,
                         children: [
-                          PaywallFeatureRow(label: l10n.paywallFeatureUnlimited),
+                          PaywallFeatureRow(
+                            label: l10n.paywallFeatureUnlimited,
+                          ),
                           PaywallFeatureRow(label: l10n.paywallFeatureBranding),
                           PaywallFeatureRow(label: l10n.paywallFeatureLibrary),
-                          PaywallFeatureRow(label: l10n.paywallFeaturePaymentLink),
+                          PaywallFeatureRow(
+                            label: l10n.paywallFeaturePaymentLink,
+                          ),
                           PaywallFeatureRow(label: l10n.paywallFeatureProfit),
                         ],
                       ),
-                      const PaywallPlans(),
+                      if (context.read<PaywallCubit>().billingAvailable)
+                        const PaywallPlans()
+                      else
+                        const Text(
+                          'Subscriptions are not available yet. Please check back later.',
+                          textAlign: TextAlign.center,
+                        ),
                     ],
                   ),
                 ),
               ),
               const Padding(
-                padding: EdgeInsets.fromLTRB(AppSpacing.xl, AppSpacing.lg, AppSpacing.xl, AppSpacing.sm),
+                padding: EdgeInsets.fromLTRB(
+                  AppSpacing.xl,
+                  AppSpacing.lg,
+                  AppSpacing.xl,
+                  AppSpacing.sm,
+                ),
                 child: PaywallFooter(),
               ),
             ],

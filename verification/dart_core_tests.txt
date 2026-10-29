@@ -1,0 +1,10 @@
+00:00 +0: loading test/session_refresh_test.dart
+00:00 +0: test/session_refresh_test.dart: concurrent 401s rotate once and replay all original requests
+00:00 +1: test/session_refresh_test.dart: concurrent 401s rotate once and replay all original requests
+00:00 +2: test/session_refresh_test.dart: concurrent 401s rotate once and replay all original requests
+00:00 +3: test/session_refresh_test.dart: refresh transport failure preserves tokens and does not logout
+00:00 +4: test/session_refresh_test.dart: invalid refresh ends the session once
+00:00 +5: test/session_refresh_test.dart: late refresh cannot restore a logged out account
+00:00 +6: test/session_refresh_test.dart: a rejected renewed access token never loops refresh
+00:00 +7: test/session_refresh_test.dart: a late 401 from a previous login is never replayed against another account
+00:00 +8: All tests passed!

@@ -1,0 +1,12 @@
+Formatted lib/features/library/presentation/pages/library/library_page.dart
+Formatted lib/features/paywall/presentation/pages/paywall_view.dart
+Formatted lib/features/paywall/presentation/widgets/paywall_footer.dart
+Formatted lib/features/quotes/presentation/bloc/builder/quote_builder_cubit.dart
+Formatted lib/features/quotes/presentation/bloc/detail/quote_detail_cubit.dart
+Formatted lib/features/quotes/presentation/bloc/preview/quote_preview_cubit.dart
+Formatted lib/features/quotes/presentation/pages/detail/quote_detail_view.dart
+Formatted lib/features/quotes/presentation/pages/preview/quote_preview_view.dart
+Formatted test/features/quotes/data/quote_api_totals_test.dart
+Formatted 59 files (9 changed) in 0.22 seconds.
+
+Dart formatter exit code: 0
